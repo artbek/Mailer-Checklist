@@ -70,41 +70,9 @@
 </style>
 
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-<script>
-	(function() {
-		$(document).ready(function() {
 
-			$("strong, span.count").on("click", function() {
-				$(this).parent().children("ul").slideToggle();
-			});
-
-		});
-	})(jQuery)
-</script>
-<div id="lll"></div>
 <div id="log-wrapper">
-	<ul>
-		<li class="level_1">
-		<strong>td width</strong><span id="td-count" class="count">0</span>
-			<ul id="td-output" class="output"></ul>
-		</li>
-		<li class="level_1">
-			<strong>colspans, rowspans</strong>
-			<ul id="spans-output" class="output"></ul>
-		</li>
-		<li class="level_1">
-			<strong>%</strong><span id="percent-count" class="count">0</span>
-			<ul id="percent-output" class="output"></ul>
-		</li>
-		<li class="level_1">
-			<strong>table attributes</strong>
-			<ul id="table-output" class="output"></ul>
-		</li>
-		<li class="level_1">
-			<strong>img alt attributes</strong>
-			<ul id="img-output" class="output"></ul>
-		</li>
-	</ul>
+	<ul id="main-list"></ul>
 </div>
 
 <script>
@@ -112,26 +80,45 @@
 	chrome.tabs.executeScript(null, {file:"action.js"});
 	chrome.extension.onRequest.addListener(function(data, sender, resp) {
 		if (data.origin == "action") {
-			buildList(data, "td");
-			buildList(data, "percent");
+			$.each(data, function(key, value) {
+				if (key != "origin") {
+					buildList(key, value);
+				}
+			});
 		} else {
 			console.log(data);
 		}
 	});
 
-	function buildList(data, listName) {
+	function buildList(listName, listValues) {
 		var dom = 'Good job!';
-		if (data[listName].length > 0) {
-			dom = '';
-			for (var i = 0; i < data[listName].length; i++) {
-				dom += '<li><code style="display: block"><em>[' + data[listName][i][0] + ']</em> ' + data[listName][i][1].replace(/</g, "&lt;").replace(/>/g, "&gt;") + '</code></li>';
-			}
+		if (listValues.length > 0) {
+			dom = '<li class="level_1"><strong>' + listName + '</strong>';
+			dom += '<span id="' + listName + '-count" class="count">' + listValues.length + '</span>';
+			dom += '<ul id="' + listName + '-output" class="output">';
+
+				for (var i = 0; i < listValues.length; i++) {
+					dom += '<li><code style="display: block"><em>[' + listValues[i][0] + ']</em> ';
+						dom += listValues[i][1].replace(/</g, "&lt;").replace(/>/g, "&gt;");
+						dom += '</code></li>';
+				}
+				dom += '</ul></li>';
 		}
-		$("#" + listName + "-output").html(dom);
-		if (data[listName].length == 0) {
-			$("#" + listname + "-count").addClass("zero");
-		}
-		$("#" + listName + "-count").html(data[listName].length);
+
+		$("#main-list").append(dom);
 	}
 
 </script>
+
+<script>
+
+(function() {
+	$(document).ready(function() {
+		$("#main-list").on("click", "strong, span.count", function() {
+			$(this).parent().children("ul").slideToggle();
+		});
+	});
+})(jQuery)
+
+</script>
+
