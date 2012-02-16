@@ -1,0 +1,137 @@
+<style>
+	html {
+		float: left;
+	}
+
+	body {
+		margin: 0px;
+		padding: 0px;
+		overflow-x: hidden;
+		font-size: 12px;
+		float: left;
+	}
+	
+	#log-wrapper {
+		width: 800px;
+		min-height: 100px;
+	}
+
+	#log {
+		padding: 10px;
+	}
+
+	code {
+		color: #666666;
+	}
+
+	code em {
+		color: #444444;
+		font-style: normal;
+		font-weight: bold;
+	}
+
+	ul {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
+
+	strong, span.count {
+		color: #666666;
+		cursor: pointer;
+		text-transform: uppercase;
+		font-family: Verdana, sans-serif;
+		font-weight: normal;
+	}
+
+	span.count {
+		color: #ffffff;
+		font-weight: bold;
+		margin-left: 10px;
+		padding: 0px 3px;
+		background-color: #ff3333;
+	}
+
+	span.count.zero {
+		background-color: #33cc33;
+	}
+
+	li.level_1 {
+		border-top: 1px dotted #eeeeee;
+		border-bottom: 1px dotted #eeeeee;
+		padding: 5px;
+	}
+
+	ul.output {
+		display: none;
+		padding: 5px 2px;
+	}
+
+</style>
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script>
+	(function() {
+		$(document).ready(function() {
+
+			$("strong, span.count").on("click", function() {
+				$(this).parent().children("ul").slideToggle();
+			});
+
+		});
+	})(jQuery)
+</script>
+<div id="lll"></div>
+<div id="log-wrapper">
+	<ul>
+		<li class="level_1">
+		<strong>td width</strong><span id="td-count" class="count">0</span>
+			<ul id="td-output" class="output"></ul>
+		</li>
+		<li class="level_1">
+			<strong>colspans, rowspans</strong>
+			<ul id="spans-output" class="output"></ul>
+		</li>
+		<li class="level_1">
+			<strong>%</strong><span id="percent-count" class="count">0</span>
+			<ul id="percent-output" class="output"></ul>
+		</li>
+		<li class="level_1">
+			<strong>table attributes</strong>
+			<ul id="table-output" class="output"></ul>
+		</li>
+		<li class="level_1">
+			<strong>img alt attributes</strong>
+			<ul id="img-output" class="output"></ul>
+		</li>
+	</ul>
+</div>
+
+<script>
+	
+	chrome.tabs.executeScript(null, {file:"action.js"});
+	chrome.extension.onRequest.addListener(function(data, sender, resp) {
+		if (data.origin == "action") {
+			buildList(data, "td");
+			buildList(data, "percent");
+		} else {
+			console.log(data);
+		}
+	});
+
+	function buildList(data, listName) {
+		var dom = 'Good job!';
+		if (data[listName].length > 0) {
+			dom = '';
+			for (var i = 0; i < data[listName].length; i++) {
+				dom += '<li><code style="display: block"><em>[' + data[listName][i][0] + ']</em> ' + data[listName][i][1].replace(/</g, "&lt;").replace(/>/g, "&gt;") + '</code></li>';
+			}
+		}
+		$("#" + listName + "-output").html(dom);
+		if (data[listName].length == 0) {
+			$("#" + listname + "-count").addClass("zero");
+		}
+		$("#" + listName + "-count").html(data[listName].length);
+	}
+
+</script>

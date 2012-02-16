@@ -1,0 +1,11 @@
+{
+	"name": "Mailer Tester",
+	"version": "1.0",
+	"description": "Have you got \"width\" on all TDs?",
+	"browser_action": {
+		"default_icon": "icon.png",
+		"name": "Mailer Tester",
+		"default_popup": "popup.html"
+	},
+	"permissions": [ "tabs", "file:///*/*", "http://*/*",  "https://*/*" ]
+}
