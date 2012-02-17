@@ -97,7 +97,7 @@
 		dom += '<ul id="' + listName + '-output" class="output">';
 
 		if (errors_count > 0) {
-			for (var i = 1; i < errors_count; i++) {
+			for (var i = 1; i <= errors_count; i++) {
 				dom += '<li><code style="display: block"><em>[' + listValues[i][0] + ']</em> ';
 					dom += listValues[i][1].replace(/</g, "&lt;").replace(/>/g, "&gt;");
 					dom += '</code></li>';

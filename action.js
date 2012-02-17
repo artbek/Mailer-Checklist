@@ -31,9 +31,11 @@ xmlhttp.onreadystatechange=function() {
 			data.width = testPattern("TDs and TABLEs without WIDTH attribute...", v, /(<td|<table)/g, /width/g);
 			data.percent = testPattern("You should avoid % values...", v, /width=".*?%"/g, null);
 			data.spans = testPattern("You shouldn't use ROWSPANS/COLSPANS...", v, /(rowspan|colspan)/g, null);
-			data.img = testPattern("Images without ALT attributes...", v, /<img/g, /alt/g);
+			data.imgAlt = testPattern("IMGs without ALT attributes...", v, /<img/g, /alt/g);
+			data.imgBorder = testPattern("IMGs without BORDER attributes...", v, /<img/g, /border/g);
 			data.cellpadding = testPattern("TABLEs without CELLPADDING attribute", v, /<table/g, /cellpadding/g);
 			data.cellspacing = testPattern("TABLEs without CELLSPACING attribute", v, /<table/g, /cellspacing/g);
+			data.tableborder = testPattern("TABLEs without BORDER attribute", v, /<table/g, /border/g);
 
 			chrome.extension.sendRequest(data);
 	}
@@ -48,9 +50,9 @@ function testPattern(desc, v, pattern, not_pattern) {
 	for (var line_number = 0; line_number < v.length; line_number++) {
 		var line_elements = v[line_number].replace(/</g, "\n<").split("\n");
 		for (var j = 0; j < line_elements.length; j++) {
-			if (line_elements[j].match(pattern) != null) {
+			if ((m = line_elements[j].match(pattern)) != null) {
 				if (not_pattern == null) {
-					result.push([line_number+1, line_elements[j]]);
+					result.push([line_number+1, line_elements[j].replace(pattern, "*" + m + "*")]);
 				} else {
 					if (line_elements[j].match(not_pattern) == null) {
 						result.push([line_number+1, line_elements[j]]);
