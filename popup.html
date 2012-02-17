@@ -91,19 +91,19 @@
 	});
 
 	function buildList(listName, listValues) {
-		var dom = 'Good job!';
-		if (listValues.length > 0) {
-			dom = '<li class="level_1"><strong>' + listName + '</strong>';
-			dom += '<span id="' + listName + '-count" class="count">' + listValues.length + '</span>';
-			dom += '<ul id="' + listName + '-output" class="output">';
+		var dom = '<li class="level_1"><strong>' + listName + '</strong>';
+		dom += '<span id="' + listName + '-count" class="count' + ((listValues.length == 0)?" zero":"") + '">' + listValues.length + '</span>';
+		dom += '<ul id="' + listName + '-output" class="output">';
 
-				for (var i = 0; i < listValues.length; i++) {
-					dom += '<li><code style="display: block"><em>[' + listValues[i][0] + ']</em> ';
-						dom += listValues[i][1].replace(/</g, "&lt;").replace(/>/g, "&gt;");
-						dom += '</code></li>';
-				}
-				dom += '</ul></li>';
+		if (listValues.length > 0) {
+			for (var i = 0; i < listValues.length; i++) {
+				dom += '<li><code style="display: block"><em>[' + listValues[i][0] + ']</em> ';
+					dom += listValues[i][1].replace(/</g, "&lt;").replace(/>/g, "&gt;");
+					dom += '</code></li>';
+			}
 		}
+
+		dom += '</ul></li>';
 
 		$("#main-list").append(dom);
 	}
