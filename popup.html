@@ -39,10 +39,10 @@
 	strong, span.count {
 		color: #666666;
 		cursor: pointer;
-		text-transform: uppercase;
 		font-family: Verdana, sans-serif;
 		font-weight: normal;
 	}
+
 
 	span.count {
 		color: #ffffff;
@@ -91,12 +91,13 @@
 	});
 
 	function buildList(listName, listValues) {
-		var dom = '<li class="level_1"><strong>' + listName + '</strong>';
-		dom += '<span id="' + listName + '-count" class="count' + ((listValues.length == 0)?" zero":"") + '">' + listValues.length + '</span>';
+		var dom = '<li class="level_1"><strong>' + listValues[0] + '</strong>';
+		var errors_count = listValues.length - 1;
+		dom += '<span id="' + listName + '-count" class="count' + ((errors_count == 0)?" zero":"") + '">' + errors_count + '</span>';
 		dom += '<ul id="' + listName + '-output" class="output">';
 
-		if (listValues.length > 0) {
-			for (var i = 0; i < listValues.length; i++) {
+		if (errors_count > 0) {
+			for (var i = 1; i < errors_count; i++) {
 				dom += '<li><code style="display: block"><em>[' + listValues[i][0] + ']</em> ';
 					dom += listValues[i][1].replace(/</g, "&lt;").replace(/>/g, "&gt;");
 					dom += '</code></li>';
@@ -115,7 +116,9 @@
 (function() {
 	$(document).ready(function() {
 		$("#main-list").on("click", "strong, span.count", function() {
-			$(this).parent().children("ul").slideToggle();
+			if ($(this).parent().children(".count").text() != "0") {
+				$(this).parent().children("ul").slideToggle();
+			}
 		});
 	});
 })(jQuery)
