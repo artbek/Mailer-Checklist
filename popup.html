@@ -1,19 +1,14 @@
+<!DOCTYPE HTML> 
 <style>
-	html {
-		float: left;
-	}
-
 	body {
 		margin: 0px;
 		padding: 0px;
 		overflow-x: hidden;
 		font-size: 12px;
-		float: left;
 	}
 	
 	#log-wrapper {
 		width: 800px;
-		min-height: 100px;
 	}
 
 	#log {
@@ -34,6 +29,11 @@
 		list-style: none;
 		margin: 0;
 		padding: 0;
+	}
+
+	ul#main-list {
+		float: left;
+		width: 100%;
 	}
 
 	strong, span.count {
@@ -57,15 +57,27 @@
 	}
 
 	li.level_1 {
+		background: #fefefe;
 		border-top: 1px dotted #eeeeee;
 		border-bottom: 1px dotted #eeeeee;
-		padding: 5px;
+		padding: 1%;
+		width: 98%;
+		float: left;
 	}
 
 	ul.output {
 		display: none;
-		padding: 5px 2px;
+		padding: 5px 0;
+		float: left;
+		width: 100%;
 	}
+
+		ul.output li {
+			float: left;
+			padding: 0 1%;
+			width: 98%;
+		}
+
 
 </style>
 
@@ -117,7 +129,8 @@
 	$(document).ready(function() {
 		$("#main-list").on("click", "strong, span.count", function() {
 			if ($(this).parent().children(".count").text() != "0") {
-				$(this).parent().children("ul").slideToggle();
+				var slideTime = $(this).parent().children("ul").children("li").size();
+				$(this).parent().children("ul").slideToggle(slideTime * 5);
 			}
 		});
 	});

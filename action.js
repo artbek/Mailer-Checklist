@@ -28,20 +28,129 @@ xmlhttp.onreadystatechange=function() {
 				origin: "action"
 			}
 
-			data.width = testPattern("TDs and TABLEs without WIDTH attribute...", v, /(<td|<table)/g, /width/g);
-			data.percent = testPattern("You should avoid % values...", v, /width=".*?%"/g, null);
-			data.spans = testPattern("You shouldn't use ROWSPANS/COLSPANS...", v, /(rowspan|colspan)/g, null);
+			data.tdwidth = testPattern("TDs without WIDTH attribute...", v, /(<td)/g, /width/g);
+			data.tdDontAddUp = testTdWidth("TDs widths don't add up", v);
+			
 			data.imgAlt = testPattern("IMGs without ALT attributes...", v, /<img/g, /alt/g);
 			data.imgBorder = testPattern("IMGs without BORDER attributes...", v, /<img/g, /border/g);
+
+			data.spans = testPattern("You shouldn't use ROWSPANS/COLSPANS...", v, /(rowspan|colspan)/g, null);
+			data.tablewidth = testPattern("TABLEs without WIDTH attribute...", v, /(<table)/g, /width/g);
 			data.cellpadding = testPattern("TABLEs without CELLPADDING attribute", v, /<table/g, /cellpadding/g);
 			data.cellspacing = testPattern("TABLEs without CELLSPACING attribute", v, /<table/g, /cellspacing/g);
 			data.tableborder = testPattern("TABLEs without BORDER attribute", v, /<table/g, /border/g);
+			data.tableTooWide = testTableWidth("TABLEs too wide", v);
+
+			data.percent = testPattern("You should avoid % values...", v, /width=".*?%"/g, null);
 
 			chrome.extension.sendRequest(data);
 	}
 }
 
 xmlhttp.send(null)
+
+function testTdWidth(desc, v) {
+	var result = [desc];
+	var t_width = [];
+
+	for (var line_number = 0; line_number < v.length; line_number++) {
+		var line_elements = v[line_number].replace(/</g, "\n<").split("\n");
+		for (var j = 0; j < line_elements.length; j++) {
+			var a = line_elements[j];
+
+			if (a.length > 0) {
+				if (a.match(/<table/) != null) {
+					t_width.push(["table", getWidth(a), line_number + 1, a]);
+				}	
+				if (a.match(/<td/) != null) {
+					t_width.push(["td", getWidth(a), line_number + 1]);
+				}
+
+				if (a.match(/<\/table/) != null) {
+					// pop all elements until TABLE
+					var total_td_width = 0;
+					while ((el = t_width.pop())[0] != "table") {
+						total_td_width += el[1];
+					}
+					if (el[1] < total_td_width) {
+						result.push([el[2], el[3] + " - sum of all TDs is: " + total_td_width + "px"]);
+					}
+				}	
+			}
+		}
+	}
+	return result;
+}
+
+
+
+function testTableWidth(desc, v) {
+	var result = [desc];
+	var table_width = [-987];
+	var td_width = [-987];
+
+	for (var line_number = 0; line_number < v.length; line_number++) {
+		var line_elements = v[line_number].replace(/</g, "\n<").split("\n");
+		for (var j = 0; j < line_elements.length; j++) {
+			var a = line_elements[j];
+			if (a.length > 0) {
+				if (a.match(/<table/) != null) {
+					// test if not bigger than latest TD
+					table_width.push(getWidth(a));
+					if ((td_width.last() > -987) && (table_width.last() > td_width.last())) {
+						result.push([line_number+1, a + " - parent TD is only " + td_width.last() + "px wide"]);
+					}
+				}	
+				if (a.match(/<td/) != null) {
+					td_width.push(getWidth(a));
+				}
+
+			}
+
+		}
+	}
+	return result;
+}
+
+
+function getWidth(a) {
+	var width_string = a.match(/width=".*?"/);
+	var padding_string = a.match(/"padding:.*?"/);
+	var padding_value = 0;
+
+	// found padding attribute
+	if (padding_string != null) {
+		var padding_values = padding_string[0].replace("padding:", "").replace(/"/g, "").replace(/px/g, "");
+		var split_padding_values = trim(padding_values).split(" ");
+		switch (split_padding_values.length) {
+			case 1:
+				padding_value = parseInt(split_padding_values[0]) * 2;
+				break;
+			case 2:
+				padding_value = parseInt(split_padding_values[1]) * 2;
+				break;
+			case 3:
+				padding_value = parseInt(split_padding_values[1]) * 2;
+				break;
+			case 4:
+				padding_value = parseInt(split_padding_values[1]) + parseInt(split_padding_values[3]);
+				break;
+			default:
+				padding_value = 0;
+		}
+	}
+
+	// found width attribute
+	if (width_string != null) {
+		var width_value = parseInt(width_string[0].replace("width=", "").replace(/"/g, ""));
+		return parseInt(padding_value + width_value);
+	} 
+	
+	// haven't found width attribute
+	return -1;
+	
+}
+
 
 
 function testPattern(desc, v, pattern, not_pattern) {
@@ -64,3 +173,13 @@ function testPattern(desc, v, pattern, not_pattern) {
 	return result;
 }
 
+
+// UTILS
+
+Array.prototype.last = function() {
+	return this.slice(-1)[0];
+}
+
+function trim(stringToTrim) {
+	return stringToTrim.replace(/^\s+|\s+$/g,"");
+}
