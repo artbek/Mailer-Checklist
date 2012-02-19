@@ -12,7 +12,9 @@
 	}
 
 	#log-message {
-		font-size: 1.4em;
+		font-family: Verdana, sans-serif;
+		font-size: 1.2em;
+		line-height: 1.6em;
 		padding: 10px;
 	}
 
@@ -184,7 +186,9 @@
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
 
 <div id="log-wrapper">
-	<div id="log-message"></div>
+	<div id="log-message">If you want access to local files (file:///*) make sure to tick: <br />
+		<span style="color: #993300">"Allow access to file URLs"</span> in: <span style="font-weight: bold;">chrome://settings/extensions</span> 
+	</div>
 	<div id="score-wrapper">
 		<div id="marker"></div>
 		<div id="your-score"></div>
@@ -238,7 +242,6 @@
 
 
 <script>
-	
 	chrome.tabs.executeScript(null, {file:"action.js"});
 	chrome.extension.onRequest.addListener(function(data, sender, resp) {
 		if (data.origin == "action") {
@@ -249,7 +252,7 @@
 					total_score += buildList(key, value);
 				}
 			});
-			var your_score = 100 - Math.min((total_score / 100) * 100, 100);
+			var your_score = Math.round(100 - Math.min((total_score / 100) * 100, 100));
 			scrollScore(your_score);
 		} else if (data.origin == "message") {
 			$("#log-message").text(data.msg);
