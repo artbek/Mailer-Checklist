@@ -1,6 +1,6 @@
 {
 	"name": "Mailer Checklist",
-	"version": "1.1.1",
+	"version": "1.1.2",
 	"description": "Building HTML mailers? This extension will show you how good the quality of your code is.",
 	"icons": {
 		"128": "icon128.png",
