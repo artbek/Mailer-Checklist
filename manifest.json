@@ -1,6 +1,6 @@
 {
 	"name": "Mailer Checklist",
-	"version": "1.0",
+	"version": "1.1.1",
 	"description": "Building HTML mailers? This extension will show you how good the quality of your code is.",
 	"icons": {
 		"128": "icon128.png",
@@ -11,5 +11,9 @@
 		"name": "Mailer Tester",
 		"default_popup": "popup.html"
 	},
-	"permissions": [ "tabs", "file:///*/*", "http://*/*",  "https://*/*" ]
+	"permissions": [ "tabs", "<all_urls>" ],
+	"content_scripts" : [{ 
+		"matches" : [ "file://*" ], 
+		"js" : [ "action.js" ] 
+	}] 
 }
