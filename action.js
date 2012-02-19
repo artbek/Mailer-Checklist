@@ -17,6 +17,10 @@ xmlhttp.onreadystatechange=function() {
 
 		case 3:
 			chrome.extension.sendRequest("processing request");
+			chrome.extension.sendRequest({
+				origin: "message",
+				msg: "Processing..."
+			});
 			break;
 
 		case 4: 

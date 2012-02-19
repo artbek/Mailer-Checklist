@@ -11,7 +11,8 @@
 		width: 800px;
 	}
 
-	#log {
+	#log-message {
+		font-size: 1.4em;
 		padding: 10px;
 	}
 
@@ -87,6 +88,17 @@
 		height: 1px;
 		top: 50%;
 		left: 0;
+	}
+
+	#your-score {
+		position: absolute;
+		top: 41%;
+		right: 2%;
+		color: rgb(255, 51, 51);
+		font-size: 0.8em;
+		font-weight: bold;
+		font-family: Verdana;	
+		text-shadow: -2px 2px 1px #cccccc;
 	}
 
 	#top-shadow {
@@ -172,8 +184,10 @@
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
 
 <div id="log-wrapper">
+	<div id="log-message"></div>
 	<div id="score-wrapper">
 		<div id="marker"></div>
+		<div id="your-score"></div>
 		<div id="top-shadow"></div>
 		<div id="left-shadow"></div>
 		<ul id="score" title="30">
@@ -190,7 +204,7 @@
 			<li>Don't insult me!</li>
 			<li>Fail!</li>
 
-			<li class="last">Deep s#$&!</li>
+			<li class="last">Deep s&#$!</li>
 		</ul>
 		<div id="right-shadow"></div>
 		<div id="bottom-shadow"></div>
@@ -199,23 +213,8 @@
 </div>
 
 <script>
-	$(document).ready(function() {
-		scrollScore(65);
-		/*
-		setTimeout(function() {scrollScore(90);}, 4000);
-		setTimeout(function() {scrollScore(80);}, 6000);
-		setTimeout(function() {scrollScore(70);}, 9000);
-		setTimeout(function() {scrollScore(60);}, 12000);
-		setTimeout(function() {scrollScore(50);}, 15000);
-		setTimeout(function() {scrollScore(40);}, 18000);
-		setTimeout(function() {scrollScore(30);}, 21000);
-		setTimeout(function() {scrollScore(20);}, 24000);
-		setTimeout(function() {scrollScore(10);}, 27000);
-		setTimeout(function() {scrollScore(0);}, 30000);
-		*/
-	});
-
 	function scrollScore(val) {
+		$("#your-score").text(val);
 		var total_height = $("#score").height() - $("#score li:first").height();
 		var target_height = ((val * total_height) / 100) - 20;
 		var time = 300;
@@ -243,11 +242,17 @@
 	chrome.tabs.executeScript(null, {file:"action.js"});
 	chrome.extension.onRequest.addListener(function(data, sender, resp) {
 		if (data.origin == "action") {
+			$("#log-message").hide();
+			var total_score = 0;
 			$.each(data, function(key, value) {
 				if (key != "origin") {
-					buildList(key, value);
+					total_score += buildList(key, value);
 				}
 			});
+			var your_score = 100 - Math.min((total_score / 100) * 100, 100);
+			scrollScore(your_score);
+		} else if (data.origin == "message") {
+			$("#log-message").text(data.msg);
 		} else {
 			console.log(data);
 		}
@@ -270,6 +275,7 @@
 		dom += '</ul></li>';
 
 		$("#main-list").append(dom);
+		return errors_count;
 	}
 
 </script>
