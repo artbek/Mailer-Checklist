@@ -34,6 +34,7 @@
 	ul#main-list {
 		float: left;
 		width: 100%;
+		min-height: 160px;
 	}
 
 	strong, span.count {
@@ -78,14 +79,164 @@
 			width: 98%;
 		}
 
+	#marker {
+		background: #ff3333;
+		box-shadow: 0px 3px 1px #cccccc;
+		position: absolute;
+		width: 100%;
+		height: 1px;
+		top: 50%;
+		left: 0;
+	}
+
+	#top-shadow {
+		background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(60,30,20,0.3)), color-stop(100%,rgba(255,255,255,0)));
+		border-radius: 6px 6px 0px 0px;
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 40%;
+	}
+
+	#bottom-shadow {
+		background: -webkit-gradient(linear, left bottom, left top, color-stop(0%,rgba(60,30,20,0.3)), color-stop(100%,rgba(255,255,255,0)));
+		border-radius: 0px 0px 6px 6px;
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		width: 100%;
+		height: 40%;
+	}
+
+	#left-shadow {
+		background: -webkit-gradient(linear, left top, right top, color-stop(0%,rgba(60,30,20,0.1)), color-stop(100%,rgba(255,255,255,0)));
+		border-radius: 6px 0px 0px 6px;
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 20%;
+		height: 100%;
+	}
+
+	#right-shadow {
+		background: -webkit-gradient(linear, right top, left top, color-stop(0%,rgba(60,30,20,0.1)), color-stop(100%,rgba(255,255,255,0)));
+		border-radius: 0px 6px 6px 0px;
+		position: absolute;
+		top: 0;
+		right: 0;
+		height: 100%;
+		width: 20%;
+	}
+
+
+	#score-wrapper {
+		background: #ffffff;
+		border-radius: 6px;
+		border: 2px solid #ffffff;
+		box-shadow: -1px 1px 15px #aaaaaa;
+		height: 140px;
+		opacity: 0.9;
+		overflow: hidden;
+		position: fixed;
+		right: 10px;
+		top: 10px;
+		width: 150px;
+	}
+
+	#score {
+		position: absolute;
+		bottom: 20px;
+		left: 0px;
+		width: 100%;
+	}
+
+	#score li {
+		background: url("measure.png") no-repeat;
+		color: #333333;
+		font-family: Georgia, serif;
+		font-size: 1.3em;
+		height: 60px;
+		padding: 0 15%;
+		text-align: center;
+		width: 70%;
+	}
+
+	#score li.last {
+		border-bottom: 0px;
+		background: url("measure_last.png") no-repeat;
+	}
 
 </style>
 
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
 
 <div id="log-wrapper">
+	<div id="score-wrapper">
+		<div id="marker"></div>
+		<div id="top-shadow"></div>
+		<div id="left-shadow"></div>
+		<ul id="score" title="30">
+			<li>Well done!</li>
+			<li>Not bad</li>
+			<li>Getting there.</li>
+			<li>Good effort!</li>
+			<li>Not bad, for an amateur.</li>
+
+
+			<li>Trying to be funny?!</li>
+			<li>Pull your finger out?</li>
+			<li>Really?!</li>
+			<li>Don't insult me!</li>
+			<li>Fail!</li>
+
+			<li class="last">Deep s#$&!</li>
+		</ul>
+		<div id="right-shadow"></div>
+		<div id="bottom-shadow"></div>
+	</div>
 	<ul id="main-list"></ul>
 </div>
+
+<script>
+	$(document).ready(function() {
+		scrollScore(65);
+		/*
+		setTimeout(function() {scrollScore(90);}, 4000);
+		setTimeout(function() {scrollScore(80);}, 6000);
+		setTimeout(function() {scrollScore(70);}, 9000);
+		setTimeout(function() {scrollScore(60);}, 12000);
+		setTimeout(function() {scrollScore(50);}, 15000);
+		setTimeout(function() {scrollScore(40);}, 18000);
+		setTimeout(function() {scrollScore(30);}, 21000);
+		setTimeout(function() {scrollScore(20);}, 24000);
+		setTimeout(function() {scrollScore(10);}, 27000);
+		setTimeout(function() {scrollScore(0);}, 30000);
+		*/
+	});
+
+	function scrollScore(val) {
+		var total_height = $("#score").height() - $("#score li:first").height();
+		var target_height = ((val * total_height) / 100) - 20;
+		var time = 300;
+		var easing = 'swing';
+		$("#score").stop(true, true).animate({bottom: -(target_height + 25)}, time, easing, function() {
+			$(this).animate({bottom: -(target_height - 25)}, time, easing, function() {
+				$(this).animate({bottom: -(target_height + 10)}, time, easing, function() {
+					$(this).animate({bottom: -(target_height - 10)}, time, easing, function() {
+						$(this).animate({bottom: -(target_height + 4)}, time, easing, function() {
+							$(this).animate({bottom: -(target_height - 4)}, time, easing, function() {
+								$(this).animate({bottom: -(target_height)}, time, easing);
+							});
+						});
+
+					});
+				});
+			});
+		});
+	}
+</script>
+
 
 <script>
 	
@@ -111,7 +262,7 @@
 		if (errors_count > 0) {
 			for (var i = 1; i <= errors_count; i++) {
 				dom += '<li><code style="display: block"><em>[' + listValues[i][0] + ']</em> ';
-					dom += listValues[i][1].replace(/</g, "&lt;").replace(/>/g, "&gt;");
+					dom += listValues[i][1].replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/#start#/g, "<em>").replace(/#end#/g, "</em>");
 					dom += '</code></li>';
 			}
 		}

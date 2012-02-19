@@ -1,7 +1,11 @@
 {
-	"name": "Mailer Tester",
+	"name": "Mailer Checklist",
 	"version": "1.0",
-	"description": "Have you got \"width\" on all TDs?",
+	"description": "Some information about the quality of your mailer's code.",
+	"icons": {
+		"128": "icon128.png",
+		"48": "icon48.png"
+	},
 	"browser_action": {
 		"default_icon": "icon.png",
 		"name": "Mailer Tester",

@@ -73,7 +73,7 @@ function testTdWidth(desc, v) {
 						total_td_width += el[1];
 					}
 					if (el[1] < total_td_width) {
-						result.push([el[2], el[3] + " - sum of all TDs is: " + total_td_width + "px"]);
+						result.push([el[2], el[3] + " - sum of all TDs is: #start#" + total_td_width + "px #end#"]);
 					}
 				}	
 			}
@@ -98,7 +98,7 @@ function testTableWidth(desc, v) {
 					// test if not bigger than latest TD
 					table_width.push(getWidth(a));
 					if ((td_width.last() > -987) && (table_width.last() > td_width.last())) {
-						result.push([line_number+1, a + " - parent TD is only " + td_width.last() + "px wide"]);
+						result.push([line_number+1, a + " - parent TD is only #start#" + td_width.last() + "px #end# wide"]);
 					}
 				}	
 				if (a.match(/<td/) != null) {
@@ -161,7 +161,7 @@ function testPattern(desc, v, pattern, not_pattern) {
 		for (var j = 0; j < line_elements.length; j++) {
 			if ((m = line_elements[j].match(pattern)) != null) {
 				if (not_pattern == null) {
-					result.push([line_number+1, line_elements[j].replace(pattern, "*" + m + "*")]);
+					result.push([line_number+1, line_elements[j].replace(pattern, "#start#" + m + "#end#")]);
 				} else {
 					if (line_elements[j].match(not_pattern) == null) {
 						result.push([line_number+1, line_elements[j]]);
