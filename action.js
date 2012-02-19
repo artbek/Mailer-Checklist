@@ -31,7 +31,7 @@ xmlhttp.onreadystatechange=function() {
 			var data = {
 				origin: "action"
 			}
-
+			data.syntax = testSyntax("SYNTAX problems...", v);
 			data.tdwidth = testPattern("TDs without WIDTH attribute...", v, /(<td)/g, /width/g);
 			data.tdDontAddUp = testTdWidth("TDs widths don't add up", v);
 			
@@ -155,6 +155,34 @@ function getWidth(a) {
 	
 }
 
+function testSyntax(desc, v) {
+	var result = [desc];
+	var tags = [];
+	
+	for (var line_number = 0; line_number < v.length; line_number++) {
+		var line_elements = v[line_number].replace(/</g, "\n<").split("\n");
+		for (var j = 0; j < line_elements.length; j++) {
+
+			// end tag
+			if ((m = line_elements[j].match(/<\/.*?>/)) != null) {
+				var tag_name = trim(m[0].replace(/<\/|>/g, "").split(" ")[0]);
+				if (tags.length > 0) {
+					if ((t = tags.pop()) != tag_name) {
+						result.push([line_number+1, line_elements[j] + " - expected #start# </" + t + "> #end#"]);
+						return result;
+					}
+				}
+
+			// start tag
+			} else if ((m = line_elements[j].match(/<.*?>/)) != null) {
+				var tag_name = trim(m[0].replace(/<|>/g, "").split(" ")[0]);
+				tags.push(tag_name);
+			}
+
+		}
+	}
+	return result;
+}
 
 
 function testPattern(desc, v, pattern, not_pattern) {
