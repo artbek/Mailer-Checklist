@@ -175,8 +175,11 @@ function testSyntax(desc, v) {
 
 			// start tag
 			} else if ((m = line_elements[j].match(/<.*?>/)) != null) {
-				var tag_name = trim(m[0].replace(/<|>/g, "").split(" ")[0]);
-				tags.push(tag_name);
+				// if not closed on the same line, e.g. <br />
+				if (line_elements[j].match(/\/>/) == null) {
+					var tag_name = trim(m[0].replace(/<|>/g, "").split(" ")[0]);
+					tags.push(tag_name);
+				}
 			}
 
 		}
