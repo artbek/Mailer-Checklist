@@ -293,6 +293,15 @@
 				$(this).parent().children("ul").slideToggle(slideTime * 5);
 			}
 		});
+
+
+		$("#score-wrapper").on("mouseover", function() {
+			$(this).stop().fadeTo(500, 0.1);
+		});
+
+		$("#score-wrapper").on("mouseout", function() {
+			$(this).stop().fadeTo(500, 0.9);
+		});
 	});
 })(jQuery)
 

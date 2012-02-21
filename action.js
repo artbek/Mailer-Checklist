@@ -56,16 +56,17 @@ xmlhttp.send(null)
 function testTdWidth(desc, v) {
 	var result = [desc];
 	var t_width = [];
-
 	for (var line_number = 0; line_number < v.length; line_number++) {
 		var line_elements = v[line_number].replace(/</g, "\n<").split("\n");
 		for (var j = 0; j < line_elements.length; j++) {
 			var a = line_elements[j];
-
 			if (a.length > 0) {
 				if (a.match(/<table/) != null) {
 					t_width.push(["table", getWidth(a), line_number + 1, a]);
 				}	
+				if (a.match(/<tr/) != null) {
+					t_width.push(["tr", line_number + 1]);
+				}
 				if (a.match(/<td/) != null) {
 					t_width.push(["td", getWidth(a), line_number + 1]);
 				}
@@ -73,11 +74,17 @@ function testTdWidth(desc, v) {
 				if (a.match(/<\/table/) != null) {
 					// pop all elements until TABLE
 					var total_td_width = 0;
+					var max_width = 0;
 					while ((el = t_width.pop())[0] != "table") {
-						total_td_width += el[1];
+						if (el[0] == "tr") {
+							max_width = Math.max(total_td_width, max_width);
+							total_td_width = 0;
+						} else {
+							total_td_width += el[1];
+						}
 					}
-					if (el[1] < total_td_width) {
-						result.push([el[2], el[3] + " - sum of all TDs is: #start#" + total_td_width + "px #end#"]);
+					if (el[1] < max_width) {
+						result.push([el[2], el[3] + " - sum of all TDs is: #start#" + max_width + "px #end#"]);
 					}
 				}	
 			}
