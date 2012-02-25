@@ -1,5 +1,3 @@
-console.log("action.js");
-
 var source = "";
 xmlhttp = new XMLHttpRequest();
 xmlhttp.open("GET", location.href, true);

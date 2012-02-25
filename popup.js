@@ -1,5 +1,3 @@
-console.log("popup.js");
-
 function buildPopup(data) {
 	buildHTML();
 	attachEvents();
