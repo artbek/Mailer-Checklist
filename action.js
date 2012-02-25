@@ -1,6 +1,6 @@
 
-if ($("#log-wrapper").size() > 0) {
-	$("#log-wrapper").remove();
+if ($("#mailer-checklist-wrapper").size() > 0) {
+	$("#mailer-checklist-wrapper").remove();
 	return;
 } else {
 	var source = "";

@@ -1,4 +1,4 @@
-#log-wrapper {
+#mailer-checklist-wrapper {
 	background: #fdfdfd;
 	border: 1px solid #cccccc;
 	overflow-x: hidden;
@@ -20,31 +20,31 @@
 	padding: 10px;
 }
 
-#log-wrapper code {
+#mailer-checklist-wrapper code {
 	color: #666666;
 	line-height: 1.3em;
 	font-size: 1em;
 }
 
-#log-wrapper code em {
+#mailer-checklist-wrapper code em {
 	color: #444444;
 	font-style: normal;
 	font-weight: bold;
 }
 
-#log-wrapper ul {
+#mailer-checklist-wrapper ul {
 	list-style: none;
 	margin: 0;
 	padding: 0;
 }
 
-#log-wrapper ul#main-list {
+#mailer-checklist-wrapper ul#main-list {
 	float: left;
 	width: 100%;
 	min-height: 160px;
 }
 
-#log-wrapper strong, #log-wrapper span.count {
+#mailer-checklist-wrapper strong, #mailer-checklist-wrapper span.count {
 	color: #666666;
 	cursor: pointer;
 	font-family: Verdana, sans-serif;
@@ -52,7 +52,7 @@
 }
 
 
-#log-wrapper span.count {
+#mailer-checklist-wrapper span.count {
 	color: #ffffff;
 	font-weight: bold;
 	margin-left: 10px;
@@ -60,11 +60,11 @@
 	background-color: #ff3333;
 }
 
-#log-wrapper span.count.zero {
+#mailer-checklist-wrapper span.count.zero {
 	background-color: #33cc33;
 }
 
-#log-wrapper li.level_1 {
+#mailer-checklist-wrapper li.level_1 {
 	border-top: 1px dotted #eeeeee;
 	border-bottom: 1px dotted #eeeeee;
 	margin: 0px;
@@ -73,20 +73,20 @@
 	float: left;
 }
 
-#log-wrapper ul.output {
+#mailer-checklist-wrapper ul.output {
 	display: none;
 	padding: 5px 0;
 	float: left;
 	width: 100%;
 }
 
-#log-wrapper ul.output li {
+#mailer-checklist-wrapper ul.output li {
 	float: left;
 	padding: 0 1%;
 	width: 98%;
 	}
 
-	#log-wrapper #marker {
+	#mailer-checklist-wrapper #marker {
 		background: #ff3333;
 		box-shadow: 0px 3px 1px #cccccc;
 		position: absolute;
@@ -96,7 +96,7 @@
 		left: 0;
 }
 
-#log-wrapper #your-score {
+#mailer-checklist-wrapper #your-score {
 	position: absolute;
 	top: 41%;
 	right: 2%;
@@ -107,7 +107,7 @@
 	text-shadow: -2px 2px 1px #cccccc;
 }
 
-#log-wrapper #top-shadow {
+#mailer-checklist-wrapper #top-shadow {
 	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(60,30,20,0.3)), color-stop(100%,rgba(255,255,255,0)));
 	border-radius: 6px 6px 0px 0px;
 	position: absolute;
@@ -117,7 +117,7 @@
 	height: 40%;
 }
 
-#log-wrapper #bottom-shadow {
+#mailer-checklist-wrapper #bottom-shadow {
 	background: -webkit-gradient(linear, left bottom, left top, color-stop(0%,rgba(60,30,20,0.3)), color-stop(100%,rgba(255,255,255,0)));
 	border-radius: 0px 0px 6px 6px;
 	position: absolute;
@@ -127,7 +127,7 @@
 	height: 40%;
 }
 
-#log-wrapper #left-shadow {
+#mailer-checklist-wrapper #left-shadow {
 	background: -webkit-gradient(linear, left top, right top, color-stop(0%,rgba(60,30,20,0.1)), color-stop(100%,rgba(255,255,255,0)));
 	border-radius: 6px 0px 0px 6px;
 	position: absolute;
@@ -137,7 +137,7 @@
 	height: 100%;
 }
 
-#log-wrapper #right-shadow {
+#mailer-checklist-wrapper #right-shadow {
 	background: -webkit-gradient(linear, right top, left top, color-stop(0%,rgba(60,30,20,0.1)), color-stop(100%,rgba(255,255,255,0)));
 	border-radius: 0px 6px 6px 0px;
 	position: absolute;
@@ -148,7 +148,7 @@
 }
 
 
-#log-wrapper #score-wrapper {
+#mailer-checklist-wrapper #score-wrapper {
 	background: #ffffff;
 	border-radius: 6px;
 	border: 2px solid #ffffff;
@@ -162,14 +162,14 @@
 	width: 150px;
 }
 
-#log-wrapper #score {
+#mailer-checklist-wrapper #score {
 	position: absolute;
 	bottom: 120px;
 	left: 0px;
 	width: 100%;
 }
 
-#log-wrapper #score li {
+#mailer-checklist-wrapper #score li {
 	background: url("chrome-extension://__MSG_@@extension_id__/measure.png") no-repeat;
 	color: #333333;
 	font-family: Georgia, serif;
@@ -181,7 +181,7 @@
 	width: 70%;
 }
 
-#log-wrapper #score li.last {
+#mailer-checklist-wrapper #score li.last {
 	border-bottom: 0px;
 	background: url("chrome-extension://__MSG_@@extension_id__/measure_last.png") no-repeat;
 }
