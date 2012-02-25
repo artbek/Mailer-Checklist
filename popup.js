@@ -58,8 +58,8 @@ function scrollScore(val) {
 
 
 function buildList(listName, listValues) {
-	var dom = '<li class="level_1"><strong>' + listValues[0] + '</strong>';
 	var errors_count = listValues.length - 1;
+	var dom = '<li class="level_1 errors' + errors_count + '"><strong>' + listValues[0] + '</strong>';
 	dom += '<span id="' + listName + '-count" class="count' + ((errors_count == 0)?" zero":"") + '">' + errors_count + '</span>';
 	dom += '<ul id="' + listName + '-output" class="output">';
 
@@ -80,28 +80,36 @@ function buildList(listName, listValues) {
 
 
 function attachEvents() {
-		$("#mailer-checklist-wrapper #main-list").on("click", "strong, span.count", function() {
-			if ($(this).parent().children(".count").text() != "0") {
-				var slideTime = $(this).parent().children("ul").children("li").size();
-				$(this).parent().children("ul").slideToggle(slideTime * 5);
+	$("#mailer-checklist-wrapper #main-list").on("click", "#mailer-checklist-wrapper li.level_1", function() {
+		if ($(this).children(".count").text() != "0") {
+			var slideTime = $(this).children("ul").children("li").size();
+			$(this).children("ul").slideToggle(slideTime * 5);
+
+			// plus/minus
+			if ($(this).hasClass("open")) {
+				$(this).removeClass("open");
+			} else {
+				$(this).addClass("open");
 			}
-		});
+		}
 
-		$("#mailer-checklist-wrapper").on("click", function(e) {
-			e.preventDefault();
-			e.stopPropagation();
-		});
+	});
 
-		$("html").on("click", function(e) {
-			$("#mailer-checklist-wrapper").remove();
-		});
+	$("#mailer-checklist-wrapper").on("click", function(e) {
+		e.preventDefault();
+		e.stopPropagation();
+	});
 
-		$("#mailer-checklist-wrapper #score-wrapper").on("mouseover", function() {
-			$(this).stop().fadeTo(500, 0.1);
-		});
+	$("html").on("click", function(e) {
+		$("#mailer-checklist-wrapper").remove();
+	});
 
-		$("#mailer-checklist-wrapper #score-wrapper").on("mouseout", function() {
-			$(this).stop().fadeTo(500, 0.9);
-		});
-	}
+	$("#mailer-checklist-wrapper #score-wrapper").on("mouseover", function() {
+		$(this).stop().fadeTo(500, 0.1);
+	});
+
+	$("#mailer-checklist-wrapper #score-wrapper").on("mouseout", function() {
+		$(this).stop().fadeTo(500, 0.9);
+	});
+}
 
