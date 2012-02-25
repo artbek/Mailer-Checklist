@@ -54,6 +54,8 @@ xmlhttp.onreadystatechange=function() {
 
 xmlhttp.send(null)
 
+
+// test if total width of TDs is larger that parent TABLE
 function testTdWidth(desc, v) {
 	var result = [desc];
 	var t_width = [];
@@ -84,8 +86,14 @@ function testTdWidth(desc, v) {
 							total_td_width += el[1];
 						}
 					}
-					if (el[1] < max_width) {
-						result.push([el[2], el[3] + " - sum of all TDs is: #start#" + max_width + "px #end#"]);
+					// el[1] contains the width of the table
+					// if it's the first table and has % value exit
+					if ((t_width.length == 0) && (el[1].toString().match(/%/g) != null)) {
+						break;
+					} else {
+						if (el[1] < max_width) {
+							result.push([el[2], el[3] + " - total width of all TDs is: #start#" + max_width + "px #end#"]);
+						}
 					}
 				}	
 			}
@@ -95,7 +103,7 @@ function testTdWidth(desc, v) {
 }
 
 
-
+// test if TABLE is not wider than parent TD
 function testTableWidth(desc, v) {
 	var result = [desc];
 	var table_width = [-987];
@@ -109,7 +117,7 @@ function testTableWidth(desc, v) {
 				if (a.match(/<table/) != null) {
 					// test if not bigger than latest TD
 					table_width.push(getWidth(a));
-					if ((td_width.last() > -987) && (table_width.last() > td_width.last())) {
+					if ((td_width.last() != -987) && (table_width.last() > td_width.last())) {
 						result.push([line_number+1, a + " - parent TD is only #start#" + td_width.last() + "px #end# wide"]);
 					}
 				}	
@@ -125,6 +133,7 @@ function testTableWidth(desc, v) {
 }
 
 
+// extract width of element: width attribute + padding
 function getWidth(a) {
 	var width_string = a.match(/width=".*?"/);
 	var padding_string = a.match(/"padding:.*?"/);
@@ -154,8 +163,12 @@ function getWidth(a) {
 
 	// found width attribute
 	if (width_string != null) {
-		var width_value = parseInt(width_string[0].replace("width=", "").replace(/"/g, ""));
-		return parseInt(padding_value + width_value);
+		var width_value = width_string[0].replace("width=", "").replace(/"/g, "");
+		if (!isNaN(width_value)) {
+			return parseInt(padding_value) + parseInt(width_value);
+		} else {
+			return width_value;
+		}
 	} 
 	
 	// haven't found width attribute

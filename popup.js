@@ -16,7 +16,7 @@ function buildHTML() {
 		
 	}
 function processData(data) {
-	$("#log-message").hide();
+	$("#log-wrapper #log-message").hide();
 	var total_score = 0;
 
 	$.each(data, function(key, value) {
@@ -31,12 +31,12 @@ function processData(data) {
 
 
 function scrollScore(val) {
-	$("#your-score").text(val);
-	var total_height = $("#score").height() - $("#score li:first").height();
+	$("#log-wrapper #your-score").text(val);
+	var total_height = $("#log-wrapper #score").height() - $("#log-wrapper #score li:first").height();
 	var target_height = ((val * total_height) / 100) - 20;
 	var time = 300;
 	var easing = 'swing';
-	$("#score").stop(true, true).animate({bottom: -(target_height + 25)}, time, easing, function() {
+	$("#log-wrapper #score").stop(true, true).animate({bottom: -(target_height + 25)}, time, easing, function() {
 		$(this).animate({bottom: -(target_height - 25)}, time, easing, function() {
 			$(this).animate({bottom: -(target_height + 10)}, time, easing, function() {
 				$(this).animate({bottom: -(target_height - 10)}, time, easing, function() {
@@ -70,14 +70,14 @@ function buildList(listName, listValues) {
 
 	dom += '</ul></li>';
 
-	$("#main-list").append(dom);
+	$("#log-wrapper #main-list").append(dom);
 	return errors_count;
 }
 
 
 
 function attachEvents() {
-		$("#main-list").on("click", "strong, span.count", function() {
+		$("#log-wrapper #main-list").on("click", "strong, span.count", function() {
 			if ($(this).parent().children(".count").text() != "0") {
 				var slideTime = $(this).parent().children("ul").children("li").size();
 				$(this).parent().children("ul").slideToggle(slideTime * 5);
@@ -93,11 +93,11 @@ function attachEvents() {
 			$("#log-wrapper").remove();
 		});
 
-		$("#score-wrapper").on("mouseover", function() {
+		$("#log-wrapper #score-wrapper").on("mouseover", function() {
 			$(this).stop().fadeTo(500, 0.1);
 		});
 
-		$("#score-wrapper").on("mouseout", function() {
+		$("#log-wrapper #score-wrapper").on("mouseout", function() {
 			$(this).stop().fadeTo(500, 0.9);
 		});
 	}
