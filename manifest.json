@@ -8,12 +8,8 @@
 	},
 	"browser_action": {
 		"default_icon": "icon.png",
-		"name": "Mailer Tester",
-		"default_popup": "popup.html"
+		"name": "Mailer Tester"
 	},
-	"permissions": [ "tabs", "<all_urls>" ],
-	"content_scripts" : [{ 
-		"matches" : [ "file://*" ], 
-		"js" : [ "action.js" ] 
-	}] 
+	"background_page": "background.html",
+	"permissions": [ "tabs", "<all_urls>" ]
 }

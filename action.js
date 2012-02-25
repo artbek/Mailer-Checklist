@@ -1,3 +1,5 @@
+console.log("action.js");
+
 var source = "";
 xmlhttp = new XMLHttpRequest();
 xmlhttp.open("GET", location.href, true);
@@ -47,7 +49,8 @@ xmlhttp.onreadystatechange=function() {
 
 			data.percent = testPattern("You should avoid % values...", v, /width=".*?%"/g, null);
 
-			chrome.extension.sendRequest(data);
+			//chrome.extension.sendRequest(data);
+			buildPopup(data);
 	}
 }
 
