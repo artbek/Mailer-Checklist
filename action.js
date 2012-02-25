@@ -211,10 +211,18 @@ function testSyntax(desc, v) {
 
 function testPattern(desc, v, pattern, not_pattern) {
 	var result = [desc];
+	var pastFirstTable = false;
 
 	for (var line_number = 0; line_number < v.length; line_number++) {
 		var line_elements = v[line_number].replace(/</g, "\n<").split("\n");
 		for (var j = 0; j < line_elements.length; j++) {
+
+			// ignore % value on the first table
+			if ((!pastFirstTable) && (line_elements[j].match(/<table/) != null) && (pattern.toString().match(/%/) != null)) {
+				pastFirstTable = true;
+				break;
+			}
+
 			if ((m = line_elements[j].match(pattern)) != null) {
 				if (not_pattern == null) {
 					result.push([line_number+1, line_elements[j].replace(pattern, "#start#" + m + "#end#")]);
