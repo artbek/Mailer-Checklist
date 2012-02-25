@@ -4,17 +4,20 @@ function buildPopup(data) {
 	processData(data);
 }
 
+
+
 function buildHTML() {
-		$("#log-wrapper").remove();
-		$("body").append('<div id="log-wrapper"></div>');
-		$("#log-wrapper").append('<ul id="main-list"></ul>');
+	$("#log-wrapper").remove();
+	$("body").append('<div id="log-wrapper"></div>');
+	$("#log-wrapper").append('<ul id="main-list"></ul>');
 
-	
-		$("#log-wrapper").append('<div id="log-message">If you want access to local files (file:///*) make sure to tick: <br /><span style="color: #993300">"Allow access to file URLs"</span> in: <span style="font-weight: bold;">chrome://settings/extensions</span></div>');
+	$("#log-wrapper").append('<div id="log-message">If you want access to local files (file:///*) make sure to tick: <br /><span style="color: #993300">"Allow access to file URLs"</span> in: <span style="font-weight: bold;">chrome://settings/extensions</span></div>');
 
-		$("#log-wrapper").append('<div id="score-wrapper"><div id="marker"></div><div id="your-score"></div> <div id="top-shadow"></div> <div id="left-shadow"></div> <ul id="score" title="Your score"> <li>Well done!</li> <li>Not bad</li> <li>Getting there.</li> <li>Good effort!</li> <li>Not bad, for an amateur.</li> <li>Trying to be funny?!</li> <li>Pull your finger out?</li> <li>Really?!</li> <li>Don\'t insult me!</li> <li>Fail!</li> <li class="last">Deep s&#$!</li> </ul> <div id="right-shadow"></div> <div id="bottom-shadow"></div> </div>');
-		
-	}
+	$("#log-wrapper").append('<div id="score-wrapper"><div id="marker"></div><div id="your-score"></div> <div id="top-shadow"></div> <div id="left-shadow"></div> <ul id="score" title="Your score"> <li>Well done!</li> <li>Not bad</li> <li>Getting there.</li> <li>Good effort!</li> <li>Not bad, for an amateur.</li> <li>Trying to be funny?!</li> <li>Pull your finger out?</li> <li>Really?!</li> <li>Don\'t insult me!</li> <li>Fail!</li> <li class="last">Deep s&#$!</li> </ul> <div id="right-shadow"></div> <div id="bottom-shadow"></div> </div>');
+}
+
+
+
 function processData(data) {
 	$("#log-wrapper #log-message").hide();
 	var total_score = 0;

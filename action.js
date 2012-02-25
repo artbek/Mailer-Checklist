@@ -1,59 +1,64 @@
-var source = "";
-xmlhttp = new XMLHttpRequest();
-xmlhttp.open("GET", location.href, true);
-xmlhttp.onreadystatechange=function() {
-	switch (xmlhttp.readyState) {
-		case 0: 
-			chrome.extension.sendRequest("!request not initialized!");
-			break;
 
-		case 1: 
-			chrome.extension.sendRequest("server connection established");
-			break;
+if ($("#log-wrapper").size() > 0) {
+	$("#log-wrapper").remove();
+	return;
+} else {
+	var source = "";
+	xmlhttp = new XMLHttpRequest();
+	xmlhttp.open("GET", location.href, true);
+	xmlhttp.onreadystatechange=function() {
+		switch (xmlhttp.readyState) {
+			case 0: 
+				chrome.extension.sendRequest("!request not initialized!");
+				break;
 
-		case 2: 
-			chrome.extension.sendRequest("request received");
-			break;
+			case 1: 
+				chrome.extension.sendRequest("server connection established");
+				break;
 
-		case 3:
-			chrome.extension.sendRequest("processing request");
-			chrome.extension.sendRequest({
-				origin: "message",
-				msg: "Processing..."
-			});
-			break;
+			case 2: 
+				chrome.extension.sendRequest("request received");
+				break;
 
-		case 4: 
-			chrome.extension.sendRequest("finished");
-			source = xmlhttp.responseText;
-			var v = source.split("\n");
+			case 3:
+				chrome.extension.sendRequest("processing request");
+				chrome.extension.sendRequest({
+					origin: "message",
+					msg: "Processing..."
+				});
+				break;
 
-			var data = {
-				origin: "action"
-			}
-			data.syntax = testSyntax("SYNTAX problems...", v);
-			data.tdwidth = testPattern("TDs without WIDTH attribute...", v, /(<td)/g, /width/g);
-			data.tdDontAddUp = testTdWidth("TDs widths don't add up", v);
-			
-			data.imgAlt = testPattern("IMGs without ALT attributes...", v, /<img/g, /alt/g);
-			data.imgBorder = testPattern("IMGs without BORDER attributes...", v, /<img/g, /border/g);
+			case 4: 
+				chrome.extension.sendRequest("finished");
+				source = xmlhttp.responseText;
+				var v = source.split("\n");
 
-			data.spans = testPattern("You shouldn't use ROWSPANS/COLSPANS...", v, /(rowspan|colspan)/g, null);
-			data.tablewidth = testPattern("TABLEs without WIDTH attribute...", v, /(<table)/g, /width/g);
-			data.cellpadding = testPattern("TABLEs without CELLPADDING attribute", v, /<table/g, /cellpadding/g);
-			data.cellspacing = testPattern("TABLEs without CELLSPACING attribute", v, /<table/g, /cellspacing/g);
-			data.tableborder = testPattern("TABLEs without BORDER attribute", v, /<table/g, /border/g);
-			data.tableTooWide = testTableWidth("TABLEs too wide", v);
+				var data = {
+					origin: "action"
+				}
+				data.syntax = testSyntax("SYNTAX problems...", v);
+				data.tdwidth = testPattern("TDs without WIDTH attribute...", v, /(<td)/g, /width/g);
+				data.tdDontAddUp = testTdWidth("TDs widths don't add up", v);
+				
+				data.imgAlt = testPattern("IMGs without ALT attributes...", v, /<img/g, /alt/g);
+				data.imgBorder = testPattern("IMGs without BORDER attributes...", v, /<img/g, /border/g);
 
-			data.percent = testPattern("You should avoid % values...", v, /width=".*?%"/g, null);
+				data.spans = testPattern("You shouldn't use ROWSPANS/COLSPANS...", v, /(rowspan|colspan)/g, null);
+				data.tablewidth = testPattern("TABLEs without WIDTH attribute...", v, /(<table)/g, /width/g);
+				data.cellpadding = testPattern("TABLEs without CELLPADDING attribute", v, /<table/g, /cellpadding/g);
+				data.cellspacing = testPattern("TABLEs without CELLSPACING attribute", v, /<table/g, /cellspacing/g);
+				data.tableborder = testPattern("TABLEs without BORDER attribute", v, /<table/g, /border/g);
+				data.tableTooWide = testTableWidth("TABLEs too wide", v);
 
-			//chrome.extension.sendRequest(data);
-			buildPopup(data);
+				data.percent = testPattern("You should avoid % values...", v, /width=".*?%"/g, null);
+
+				//chrome.extension.sendRequest(data);
+				buildPopup(data);
+		}
 	}
+
+	xmlhttp.send(null)
 }
-
-xmlhttp.send(null)
-
 
 // test if total width of TDs is larger that parent TABLE
 function testTdWidth(desc, v) {
