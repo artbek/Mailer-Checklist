@@ -139,12 +139,23 @@ function testTableWidth(desc, v) {
 // extract width of element: width attribute + padding
 function getWidth(a) {
 	var width_string = a.match(/width=".*?"/);
-	var padding_string = a.match(/"padding:.*?"/);
+	var padding_string = a.match(/style.*?".*padding:.*?"/);
 	var padding_value = 0;
 
 	// found padding attribute
 	if (padding_string != null) {
-		var padding_values = padding_string[0].replace("padding:", "").replace(/"/g, "").replace(/px/g, "");
+		padding_string = padding_string[0];
+		var split_styles = padding_string.split(";");
+		// more styles that just padding
+		for (var st = 0; st < split_styles.length; st++) {
+			if (split_styles[st].match(/padding/g) != null) {
+				padding_string = split_styles[st];
+				break;
+			}
+		}
+		padding_string = trim(padding_string);
+
+		var padding_values = padding_string.replace(/style|=|padding:/g, "").replace(/"/g, "").replace(/px/g, "");
 		var split_padding_values = trim(padding_values).split(" ");
 		switch (split_padding_values.length) {
 			case 1:
