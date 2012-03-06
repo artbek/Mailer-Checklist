@@ -49,6 +49,7 @@ if ($("#mailer-checklist-wrapper").size() > 0) {
 				data.tableTooWide = testTableWidth("TABLEs too wide", v);
 
 				data.percent = testPattern("You should avoid % values...", v, /width=".*?%"/g, null);
+				data.percent = testPattern("Outlook is funny about PX in attributes...", v, /(height|width)="[0-9]*px?"/g, null);
 
 				//chrome.extension.sendRequest(data);
 				buildPopup(data);
@@ -146,7 +147,7 @@ function getWidth(a) {
 	if (padding_string != null) {
 		padding_string = padding_string[0];
 		var split_styles = padding_string.split(";");
-		// more styles that just padding
+		// more styles that just padding - find the one with padding
 		for (var st = 0; st < split_styles.length; st++) {
 			if (split_styles[st].match(/padding/g) != null) {
 				padding_string = split_styles[st];
@@ -239,7 +240,7 @@ function testPattern(desc, v, pattern, not_pattern) {
 
 			if ((m = line_elements[j].match(pattern)) != null) {
 				if (not_pattern == null) {
-					result.push([line_number+1, line_elements[j].replace(pattern, "#start#" + m + "#end#")]);
+					result.push([line_number+1, line_elements[j].replace(pattern, "#start#$&#end#")]);
 				} else {
 					if (line_elements[j].match(not_pattern) == null) {
 						result.push([line_number+1, line_elements[j]]);
