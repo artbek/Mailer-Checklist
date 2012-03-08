@@ -82,9 +82,11 @@ function testTdWidth(desc, v) {
 					// pop all elements until TABLE
 					var total_td_width = 0;
 					var max_width = 0;
+					var min_width = 9999;
 					while ((el = t_width.pop())[0] != "table") {
 						if (el[0] == "tr") {
 							max_width = Math.max(total_td_width, max_width);
+							min_width = Math.min(total_td_width, min_width);
 							total_td_width = 0;
 						} else {
 							total_td_width += el[1];
@@ -97,6 +99,9 @@ function testTdWidth(desc, v) {
 					} else {
 						if (el[1] < max_width) {
 							result.push([el[2], el[3] + " - total width of all TDs is: #start#" + max_width + "px #end#"]);
+						}
+						if (min_width > 0 && el[1] > min_width) {
+							result.push([el[2], el[3] + " - total width of all TDs is: #start#" + min_width + "px #end#"]);
 						}
 					}
 				}	
