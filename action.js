@@ -29,7 +29,8 @@ if ($("#mailer-checklist-wrapper").size() > 0) {
 			case 4: 
 				chrome.extension.sendRequest("finished");
 				source = xmlhttp.responseText;
-				var v = source.split("\n");
+				// quick remove HTML comments, replace empty width attributes to force error and split lines to array
+				var v = source.replace(/<!.*?>/g, "").replace(/width=""/g, 'width="0"').split("\n");
 
 				var data = {
 					origin: "action"
