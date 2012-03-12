@@ -40,6 +40,8 @@ if ($("#mailer-checklist-wrapper").size() > 0) {
 				
 				data.imgAlt = testPattern("IMGs without ALT attributes...", v, /<img/g, /alt/g);
 				data.imgBorder = testPattern("IMGs without BORDER attributes...", v, /<img/g, /border/g);
+				data.imgAttr = testImages("IMGs width/height attributes...", v);
+				data.imgTooWide = testImageWidth("IMGs too wide", v);
 
 				data.spans = testPattern("You shouldn't use ROWSPANS/COLSPANS...", v, /(rowspan|colspan)/g, null);
 				data.tablewidth = testPattern("TABLEs without WIDTH attribute...", v, /(<table)/g, /width/g);
@@ -49,7 +51,7 @@ if ($("#mailer-checklist-wrapper").size() > 0) {
 				data.tableTooWide = testTableWidth("TABLEs too wide", v);
 
 				data.percent = testPattern("You should avoid % values...", v, /width=".*?%"/g, null);
-				data.percent = testPattern("Outlook is funny about PX in attributes...", v, /(height|width)="[0-9]*px?"/g, null);
+				data.percentOutlook = testPattern("Outlook is funny about PX in attributes...", v, /(height|width)="[0-9]*px?"/g, null);
 
 				//chrome.extension.sendRequest(data);
 				buildPopup(data);
@@ -127,6 +129,36 @@ function testTableWidth(desc, v) {
 					// test if not bigger than latest TD
 					table_width.push(getWidth(a));
 					if ((td_width.last() != -987) && (table_width.last() > td_width.last())) {
+						result.push([line_number+1, a + " - parent TD is only #start#" + td_width.last() + "px #end# wide"]);
+					}
+				}	
+				if (a.match(/<td/) != null) {
+					td_width.push(getWidth(a));
+				}
+
+			}
+
+		}
+	}
+	return result;
+}
+
+
+// test if IMG is not wider than parent TD
+function testImageWidth(desc, v) {
+	var result = [desc];
+	var img_width = [-987];
+	var td_width = [-987];
+
+	for (var line_number = 0; line_number < v.length; line_number++) {
+		var line_elements = v[line_number].replace(/</g, "\n<").split("\n");
+		for (var j = 0; j < line_elements.length; j++) {
+			var a = line_elements[j];
+			if (a.length > 0) {
+				if (a.match(/<img/) != null) {
+					// test if not bigger than latest TD
+					img_width.push(getAttr(a, "width"));
+					if ((td_width.last() != -987) && (img_width.last() > td_width.last())) {
 						result.push([line_number+1, a + " - parent TD is only #start#" + td_width.last() + "px #end# wide"]);
 					}
 				}	
@@ -257,6 +289,31 @@ function testPattern(desc, v, pattern, not_pattern) {
 	return result;
 }
 
+function testImages(desc, v) {
+	var result = [desc];
+	var tags = [];
+	
+	for (var line_number = 0; line_number < v.length; line_number++) {
+		var line_elements = v[line_number].replace(/</g, "\n<").split("\n");
+		for (var j = 0; j < line_elements.length; j++) {
+			if (line_elements[j].match(/<img/) != null) {
+				// get source
+				if ((img_src = getAttr(line_elements[j], "src")) != null) {
+					var temp_img = new Image();
+					temp_img.src = img_src;
+					img_width = getAttr(line_elements[j], "width");
+					img_height = getAttr(line_elements[j], "height");
+
+					if ((img_width != temp_img.width) || (img_height != temp_img.height)) {
+						result.push([line_number, line_elements[j] + " - should be: #start#" + temp_img.width + " x " + temp_img.height + "#end#"]);
+					}
+				}
+			}
+
+		}
+	}
+	return result;
+}
 
 // UTILS
 
@@ -266,4 +323,13 @@ Array.prototype.last = function() {
 
 function trim(stringToTrim) {
 	return stringToTrim.replace(/^\s+|\s+$/g,"");
+}
+
+function getAttr(str, attr) {
+	if ((attr_string = str.match(new RegExp(attr + '=".*?"'))) != null) {
+		var attr_value = attr_string[0].replace(new RegExp(attr + '='), "").replace(/"/g, "");
+		return attr_value;
+	} else {
+		return null;
+	}
 }
