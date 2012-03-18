@@ -72,13 +72,13 @@ function testTdWidth(desc, v) {
 			var a = line_elements[j];
 			if (a.length > 0) {
 				if (a.match(/<table/) != null) {
-					t_width.push(["table", getWidth(a), line_number + 1, a]);
+					t_width.push(["table", getWidth(a, false), line_number + 1, a]);
 				}	
 				if (a.match(/<tr/) != null) {
 					t_width.push(["tr", line_number + 1]);
 				}
 				if (a.match(/<td/) != null) {
-					t_width.push(["td", getWidth(a), line_number + 1]);
+					t_width.push(["td", getWidth(a, false), line_number + 1]);
 				}
 
 				if (a.match(/<\/table/) != null) {
@@ -134,7 +134,7 @@ function testTableWidth(desc, v) {
 					}
 				}	
 				if (a.match(/<td/) != null) {
-					td_width.push(getWidth(a));
+					td_width.push(getWidth(a, true));
 				}
 
 			}
@@ -158,13 +158,13 @@ function testImageWidth(desc, v) {
 			if (a.length > 0) {
 				if (a.match(/<img/) != null) {
 					// test if not bigger than latest TD
-					img_width.push(getAttr(a, "width"));
+					img_width.push(getWidth(a));
 					if ((td_width.last() != -987) && (img_width.last() > td_width.last())) {
 						result.push([line_number+1, a + " - parent TD is only #start#" + td_width.last() + "px #end# wide"]);
 					}
 				}	
 				if (a.match(/<td/) != null) {
-					td_width.push(getWidth(a));
+					td_width.push(getWidth(a, true));
 				}
 
 			}
@@ -176,41 +176,27 @@ function testImageWidth(desc, v) {
 
 
 // extract width of element: width attribute + padding
-function getWidth(a) {
+function getWidth(a, ignorePadding) {
 	var width_string = a.match(/width=".*?"/);
-	var padding_string = a.match(/style.*?".*padding:.*?"/);
 	var padding_value = 0;
 
-	// found padding attribute
-	if (padding_string != null) {
-		padding_string = padding_string[0];
-		var split_styles = padding_string.split(";");
-		// more styles that just padding - find the one with padding
-		for (var st = 0; st < split_styles.length; st++) {
-			if (split_styles[st].match(/padding/g) != null) {
-				padding_string = split_styles[st];
-				break;
-			}
-		}
-		padding_string = trim(padding_string);
+	if (!ignorePadding) {
 
-		var padding_values = padding_string.replace(/style|=|padding:/g, "").replace(/"/g, "").replace(/px/g, "");
-		var split_padding_values = trim(padding_values).split(" ");
-		switch (split_padding_values.length) {
-			case 1:
-				padding_value = parseInt(split_padding_values[0]) * 2;
-				break;
-			case 2:
-				padding_value = parseInt(split_padding_values[1]) * 2;
-				break;
-			case 3:
-				padding_value = parseInt(split_padding_values[1]) * 2;
-				break;
-			case 4:
-				padding_value = parseInt(split_padding_values[1]) + parseInt(split_padding_values[3]);
-				break;
-			default:
-				padding_value = 0;
+		var padding_string = a.match(/style.*?".*padding.*?"/);
+
+		// found padding attribute
+		if (padding_string != null) {
+			$("body").append("<div id='test-padding-dummy'></div>");
+			var padding_string = padding_string[0].replace(/style|=|"/g, "");
+			var split_styles = padding_string.split(";");
+			for (st = 0; st < split_styles.length; st++) {
+				var key_val = split_styles[st].split(":");
+				$("#test-padding-dummy").css(trim(key_val[0]), trim(key_val[1]));
+			}
+
+			padding_value = px2int($("#test-padding-dummy").css("padding-left")) + px2int($("#test-padding-dummy").css("padding-right"));
+			$("#test-padding-dummy").remove();
+
 		}
 	}
 
@@ -324,6 +310,10 @@ Array.prototype.last = function() {
 
 function trim(stringToTrim) {
 	return stringToTrim.replace(/^\s+|\s+$/g,"");
+}
+
+function px2int(str) {
+	return parseInt(str.replace("px", ""));
 }
 
 function getAttr(str, attr) {
