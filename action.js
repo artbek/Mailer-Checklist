@@ -86,10 +86,18 @@ function testTdWidth(desc, v) {
 					var total_td_width = 0;
 					var max_width = 0;
 					var min_width = 9999;
+					var tr_under = 0;
+					var tr_over = 0;
 					while ((el = t_width.pop())[0] != "table") {
 						if (el[0] == "tr") {
-							max_width = Math.max(total_td_width, max_width);
-							min_width = Math.min(total_td_width, min_width);
+							if (total_td_width > max_width) {
+								max_width = Math.max(total_td_width, max_width);
+								tr_over = el[1];
+							}
+							if (total_td_width < min_width) {
+								min_width = Math.min(total_td_width, min_width);
+								tr_under = el[1];
+							}
 							total_td_width = 0;
 						} else {
 							total_td_width += el[1];
@@ -101,10 +109,10 @@ function testTdWidth(desc, v) {
 						break;
 					} else {
 						if (el[1] < max_width) {
-							result.push([el[2], el[3] + " - total width of all TDs is: #start#" + max_width + "px #end#"]);
+							result.push([el[2], el[3] + " - total width of all TDs is: #start#" + max_width + "px #end# - (try line: #start#[" + tr_over + "]#end#)"]);
 						}
 						if (min_width > 0 && el[1] > min_width) {
-							result.push([el[2], el[3] + " - total width of all TDs is: #start#" + min_width + "px #end#"]);
+							result.push([el[2], el[3] + " - total width of all TDs is: #start#" + min_width + "px #end# - (try line: #start#[" + tr_under + "]#end#)"]);
 						}
 					}
 				}	
@@ -190,8 +198,10 @@ function getWidth(a, ignorePadding) {
 			var padding_string = padding_string[0].replace(/style|=|"/g, "");
 			var split_styles = padding_string.split(";");
 			for (st = 0; st < split_styles.length; st++) {
-				var key_val = split_styles[st].split(":");
-				$("#test-padding-dummy").css(trim(key_val[0]), trim(key_val[1]));
+				if (trim(split_styles[st]).length > 0) {
+					var key_val = split_styles[st].split(":");
+					$("#test-padding-dummy").css(trim(key_val[0]), trim(key_val[1]));
+				}
 			}
 
 			padding_value = px2int($("#test-padding-dummy").css("padding-left")) + px2int($("#test-padding-dummy").css("padding-right"));
