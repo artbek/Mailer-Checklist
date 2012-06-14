@@ -3,7 +3,8 @@ if ($("#mailer-checklist-wrapper").size() > 0) {
 } else {
 	var source = "";
 	xmlhttp = new XMLHttpRequest();
-	xmlhttp.open("GET", location.href, true);
+	var timestamp = Date.now();
+	xmlhttp.open("GET", location.href + '?' + timestamp, true);
 	xmlhttp.onreadystatechange=function() {
 		switch (xmlhttp.readyState) {
 			case 0: 
