@@ -8,27 +8,27 @@ if ($("#mailer-checklist-wrapper").size() > 0) {
 	xmlhttp.onreadystatechange=function() {
 		switch (xmlhttp.readyState) {
 			case 0: 
-				chrome.extension.sendRequest("!request not initialized!");
+				chrome.extension.sendMessage("!request not initialized!");
 				break;
 
 			case 1: 
-				chrome.extension.sendRequest("server connection established");
+				chrome.extension.sendMessage("server connection established");
 				break;
 
 			case 2: 
-				chrome.extension.sendRequest("request received");
+				chrome.extension.sendMessage("request received");
 				break;
 
 			case 3:
-				chrome.extension.sendRequest("processing request");
-				chrome.extension.sendRequest({
+				chrome.extension.sendMessage("processing request");
+				chrome.extension.sendMessage({
 					origin: "message",
 					msg: "Processing..."
 				});
 				break;
 
 			case 4: 
-				chrome.extension.sendRequest("finished");
+				chrome.extension.sendMessage("finished");
 				source = xmlhttp.responseText;
 				// quick remove HTML comments, replace empty width attributes to force error and split lines to array
 				var v = source.replace(/<!.*?>/g, "").replace(/width=""/g, 'width="0"').split("\n");
@@ -55,7 +55,7 @@ if ($("#mailer-checklist-wrapper").size() > 0) {
 				data.percent = testPattern("You should avoid % values...", v, /width=".*?%"/g, null);
 				data.percentOutlook = testPattern("Outlook is funny about PX in attributes...", v, /(height|width)="[0-9]*px?"/g, null);
 
-				//chrome.extension.sendRequest(data);
+				//chrome.extension.sendMessage(data);
 				buildPopup(data);
 		}
 	}
