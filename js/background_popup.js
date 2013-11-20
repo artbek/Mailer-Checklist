@@ -59,14 +59,19 @@ function scrollScore(val) {
 
 function buildList(listName, listValues) {
 	var errors_count = listValues.length - 1;
-	var dom = '<li class="level_1 errors' + errors_count + '"><strong>' + listValues[0] + '</strong>';
-	dom += '<span id="' + listName + '-count" class="count' + ((errors_count == 0)?" zero":"") + '">' + errors_count + '</span>';
+	var dom = '<li class="level_1 errors' + errors_count + '">';
+	dom += '<strong>' + listValues[0] + ((errors_count == 0) ? "" : "...") + '</strong>';
+	dom += '<span id="' + listName + '-count" class="count' + ((errors_count == 0) ? " zero" : "") + '">' + errors_count + '</span>';
 	dom += '<ul id="' + listName + '-output" class="output">';
 
 	if (errors_count > 0) {
 		for (var i = 1; i <= errors_count; i++) {
 			dom += '<li><code style="display: block"><em>[' + listValues[i][0] + ']</em> ';
-			dom += listValues[i][1].replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/#start#/g, "<em>").replace(/#end#/g, "</em>");
+			dom += listValues[i][1]
+				.replace(/</g, "&lt;")
+				.replace(/>/g, "&gt;")
+				.replace(/#start#/g, "<em>")
+				.replace(/#end#/g, "</em>");
 			dom += '</code></li>';
 		}
 	}

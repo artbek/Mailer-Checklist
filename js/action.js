@@ -30,37 +30,64 @@ if ($("#mailer-checklist-wrapper").size() > 0) {
 			case 4:
 				chrome.extension.sendMessage("finished");
 				source = xmlhttp.responseText;
-				// quick remove HTML comments, replace empty width attributes to force error and split lines to array
-				var v = source.replace(/<!.*?>/g, "").replace(/width=""/g, 'width="0"').split("\n");
+				// quick remove HTML comments, replace empty width attributes
+				// to force error and split lines to array
+				var v = source
+					.replace(/<!.*?>/g, "")
+					.replace(/width=""/g, 'width="0"')
+					.split("\n");
 
 				var data = {
 					origin: "action"
 				}
-				data.syntax = testSyntax("SYNTAX problems...", v);
-				data.tdwidth = testPattern("TDs without WIDTH attribute...", v, /(<td)/g, /width/g);
-				data.tdDontAddUp = testTdWidth("TDs widths don't add up...", v);
 
-				data.imgAlt = testPattern("IMGs without ALT attributes...", v, /<img/g, /alt/g);
-				data.imgBorder = testPattern("IMGs without BORDER attributes...", v, /<img/g, /border/g);
-				data.imgAttr = testImages("IMGs width/height attributes...", v);
-				data.imgTooWide = testImageWidth("IMGs too wide...", v);
+				var desc = "SYNTAX problems";
+				data.syntax = testSyntax(desc, v);
 
-				data.spans = testPattern("You shouldn't use ROWSPANS/COLSPANS...", v, /(rowspan|colspan)/g, null);
-				data.tablewidth = testPattern("TABLEs without WIDTH attribute...", v, /(<table)/g, /width/g);
-				data.cellpadding = testPattern("TABLEs without CELLPADDING attribute", v, /<table/g, /cellpadding/g);
-				data.cellspacing = testPattern("TABLEs without CELLSPACING attribute", v, /<table/g, /cellspacing/g);
-				data.tableborder = testPattern("TABLEs without BORDER attribute", v, /<table/g, /border/g);
-				data.tableTooWide = testTableWidth("TABLEs too wide...", v);
+				desc = "TDs without WIDTH attribute";
+				data.tdwidth = testPattern(desc, v, /(<td)/g, /width/g);
 
-				data.percent = testPattern("You should avoid % values...", v, /width=".*?%"/g, null);
-				data.percentOutlook = testPattern(
-					"Outlook is funny about PX in attributes...",
-					v,
-					/(height|width)="[0-9]*px?"/g,
-					null
-				);
+				desc = "TDs widths don't add up";
+				data.tdDontAddUp = testTdWidth(desc, v);
 
-				data.tdheight = testTDHeight("TDs with HEIGHT less than 16px...", v);
+				desc = "IMGs without ALT attributes";
+				data.imgAlt = testPattern(desc, v, /<img/g, /alt/g);
+
+				desc = "IMGs without BORDER attributes";
+				data.imgBorder = testPattern(desc, v, /<img/g, /border/g);
+
+				desc = "IMGs width/height attributes";
+				data.imgAttr = testImages(desc, v);
+
+				desc = "IMGs too wide";
+				data.imgTooWide = testImageWidth(desc, v);
+
+				desc = "You shouldn't use ROWSPANS/COLSPANS";
+				data.spans = testPattern(desc, v, /(rowspan|colspan)/g, null);
+
+				desc = "TABLEs without WIDTH attribute";
+				data.tablewidth = testPattern(desc, v, /(<table)/g, /width/g);
+
+				desc = "TABLEs without CELLPADDING attribute";
+				data.cellpadding = testPattern(desc, v, /<table/g, /cellpadding/g);
+
+				desc = "TABLEs without CELLSPACING attribute";
+				data.cellspacing = testPattern(desc, v, /<table/g, /cellspacing/g);
+
+				desc = "TABLEs without BORDER attribute";
+				data.tableborder = testPattern(desc, v, /<table/g, /border/g);
+
+				desc = "TABLEs too wide";
+				data.tableTooWide = testTableWidth(desc, v);
+
+				desc = "You should avoid % values";
+				data.percent = testPattern(desc, v, /width=".*?%"/g, null);
+
+				desc = "Outlook is funny about PX in attributes";
+				data.outlook = testPattern(desc, v, /(height|width)="[0-9]*px?"/g, null);
+
+				desc = "TDs with HEIGHT less than 16px";
+				data.tdheight = testTDHeight(desc, v);
 
 				//chrome.extension.sendMessage(data);
 				buildPopup(data);
@@ -72,7 +99,8 @@ if ($("#mailer-checklist-wrapper").size() > 0) {
 
 
 // Outlook 2013 fix.
-// Table cells with height <= 15 need additional style attributes: line-height & font-size
+// Table cells with height <= 15 need additional style attributes:
+// 'line-height' & 'font-size'
 // and can't be empty (&nbsp; is fine).
 function testTDHeight(desc, v) {
 	var result = [desc];
@@ -88,7 +116,10 @@ function testTDHeight(desc, v) {
 			if (cell_content) {
 				if (a.match(/<\/td>/)) {
 					if (! trim(cell_content).length) {
-						result.push([line_number + 1, a + " - cell can't be empty (try: #start#&amp;nbsp;#end#)"]);
+						result.push([
+							line_number + 1,
+							a + " - cell can't be empty (try: #start#&amp;nbsp;#end#)"
+						]);
 					}
 					cell_content = false;
 				} else {
@@ -160,17 +191,27 @@ function testTdWidth(desc, v) {
 					}
 					// el[1] contains the width of the table
 					// if it's the first table and has % value exit
-					if ((t_width.length == 0) && (el[1].toString().match(/%/g) != null)) {
+					if ((t_width.length == 0) &&
+						(el[1].toString().match(/%/g) != null))
+					{
 						break;
 					} else {
+						// under
 						if (el[1] < max_width) {
-							result.push([el[2], el[3] + " - total width of all TDs is: #start#" + max_width +
-								"px #end# - (try line: #start#[" + tr_over + "]#end#)"
+							result.push([
+								el[2],
+								el[3] + " - total width of all TDs is: #start#" +
+								max_width + "px #end# - (try line: #start#[" +
+								tr_over + "]#end#)"
 							]);
 						}
+						// over
 						if (min_width > 0 && el[1] > min_width) {
-							result.push([el[2], el[3] + " - total width of all TDs is: #start#" + min_width +
-								"px #end# - (try line: #start#[" + tr_under + "]#end#)"
+							result.push([
+								el[2],
+								el[3] + " - total width of all TDs is: #start#" +
+								min_width + "px #end# - (try line: #start#[" +
+								tr_under + "]#end#)"
 							]);
 						}
 					}
@@ -196,8 +237,14 @@ function testTableWidth(desc, v) {
 				if (a.match(/<table/) != null) {
 					// test if not bigger than latest TD
 					table_width.push(getWidth(a));
-					if ((td_width.last() != -987) && (table_width.last() > td_width.last())) {
-						result.push([line_number+1, a + " - parent TD is only #start#" + td_width.last() + "px #end# wide"]);
+					if ((td_width.last() != -987) &&
+						(table_width.last() > td_width.last()))
+					{
+						result.push([
+							line_number+1,
+							a + " - parent TD is only #start#" + td_width.last() +
+							"px #end# wide"
+						]);
 					}
 				}
 				if (a.match(/<td/) != null) {
@@ -226,8 +273,14 @@ function testImageWidth(desc, v) {
 				if (a.match(/<img/) != null) {
 					// test if not bigger than latest TD
 					img_width.push(getWidth(a));
-					if ((td_width.last() != -987) && (img_width.last() > td_width.last())) {
-						result.push([line_number+1, a + " - parent TD is only #start#" + td_width.last() + "px #end# wide"]);
+					if ((td_width.last() != -987) &&
+						(img_width.last() > td_width.last()))
+					{
+						result.push([
+							line_number+1,
+							a + " - parent TD is only #start#" + td_width.last() +
+							"px #end# wide"
+						]);
 					}
 				}
 				if (a.match(/<td/) != null) {
@@ -299,7 +352,10 @@ function testSyntax(desc, v) {
 				var tag_name = trim(m[0].replace(/<\/|>/g, "").split(" ")[0]);
 				if (tags.length > 0) {
 					if ((t = tags.pop()) != tag_name) {
-						result.push([line_number+1, line_elements[j] + " - expected #start# </" + t + "> #end#"]);
+						result.push([
+							line_number+1,
+							line_elements[j] + " - expected #start# </" + t + "> #end#"
+						]);
 						return result;
 					}
 				}
@@ -329,14 +385,19 @@ function testPattern(desc, v, pattern, not_pattern) {
 
 			// ignore % value on the first table
 			if ((! pastFirstTable) &&
-				(line_elements[j].match(/<table/) != null) && (pattern.toString().match(/%/) != null)) {
+				line_elements[j].match(/<table/) != null &&
+				pattern.toString().match(/%/) != null)
+			{
 				pastFirstTable = true;
 				break;
 			}
 
 			if ((m = line_elements[j].match(pattern)) != null) {
 				if (not_pattern == null) {
-					result.push([line_number+1, line_elements[j].replace(pattern, "#start#$&#end#")]);
+					result.push([
+						line_number+1,
+						line_elements[j].replace(pattern, "#start#$&#end#")
+					]);
 				} else {
 					if (line_elements[j].match(not_pattern) == null) {
 						result.push([line_number+1, line_elements[j]]);
@@ -365,9 +426,13 @@ function testImages(desc, v) {
 					temp_img.src = img_src;
 					img_width = getAttr(line_elements[j], "width");
 					img_height = getAttr(line_elements[j], "height");
-					if ((img_width != temp_img.width) || (img_height != temp_img.height)) {
-						result.push([line_number + 1, line_elements[j] + " - should be: #start#" +
-							temp_img.width + " x " + temp_img.height + "#end#"
+					if ((img_width != temp_img.width) ||
+						(img_height != temp_img.height))
+					{
+						result.push([
+							line_number + 1,
+							line_elements[j] + " - should be: #start#" + temp_img.width +
+							" x " + temp_img.height + "#end#"
 						]);
 					}
 
@@ -376,9 +441,13 @@ function testImages(desc, v) {
 					if (temp_img.height < 20) {
 						if (px2int($(last_open_td[1]).attr("height")) != temp_img.height ||
 							px2int($(last_open_td[1]).css("line-height")) != temp_img.height) {
-							result.push([last_open_td[0] + 1, last_open_td[1] +
-								' - small image (height < 20px) - #start#height="' + temp_img.height +
-								'"#end# and #start#style="line-height: ' + temp_img.height + 'px"#end# required on TD'
+							result.push([
+								last_open_td[0] + 1,
+								last_open_td[1] +
+								' - small image (height < 20px) - #start#height="' +
+								temp_img.height +
+								'"#end# and #start#style="line-height: ' +
+								temp_img.height + 'px"#end# required on TD'
 							]);
 						}
 					}
@@ -412,7 +481,9 @@ function px2int(str) {
 
 function getAttr(str, attr) {
 	if ((attr_string = str.match(new RegExp(attr + '=".*?"'))) != null) {
-		var attr_value = attr_string[0].replace(new RegExp(attr + '='), "").replace(/"/g, "");
+		var attr_value = attr_string[0]
+			.replace(new RegExp(attr + '='), "")
+			.replace(/"/g, "");
 		return attr_value;
 	} else {
 		return null;
