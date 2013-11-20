@@ -7,15 +7,15 @@ if ($("#mailer-checklist-wrapper").size() > 0) {
 	xmlhttp.open("GET", location.href + '?' + timestamp, true);
 	xmlhttp.onreadystatechange=function() {
 		switch (xmlhttp.readyState) {
-			case 0: 
+			case 0:
 				chrome.extension.sendMessage("!request not initialized!");
 				break;
 
-			case 1: 
+			case 1:
 				chrome.extension.sendMessage("server connection established");
 				break;
 
-			case 2: 
+			case 2:
 				chrome.extension.sendMessage("request received");
 				break;
 
@@ -27,7 +27,7 @@ if ($("#mailer-checklist-wrapper").size() > 0) {
 				});
 				break;
 
-			case 4: 
+			case 4:
 				chrome.extension.sendMessage("finished");
 				source = xmlhttp.responseText;
 				// quick remove HTML comments, replace empty width attributes to force error and split lines to array
@@ -38,22 +38,29 @@ if ($("#mailer-checklist-wrapper").size() > 0) {
 				}
 				data.syntax = testSyntax("SYNTAX problems...", v);
 				data.tdwidth = testPattern("TDs without WIDTH attribute...", v, /(<td)/g, /width/g);
-				data.tdDontAddUp = testTdWidth("TDs widths don't add up", v);
-				
+				data.tdDontAddUp = testTdWidth("TDs widths don't add up...", v);
+
 				data.imgAlt = testPattern("IMGs without ALT attributes...", v, /<img/g, /alt/g);
 				data.imgBorder = testPattern("IMGs without BORDER attributes...", v, /<img/g, /border/g);
 				data.imgAttr = testImages("IMGs width/height attributes...", v);
-				data.imgTooWide = testImageWidth("IMGs too wide", v);
+				data.imgTooWide = testImageWidth("IMGs too wide...", v);
 
 				data.spans = testPattern("You shouldn't use ROWSPANS/COLSPANS...", v, /(rowspan|colspan)/g, null);
 				data.tablewidth = testPattern("TABLEs without WIDTH attribute...", v, /(<table)/g, /width/g);
 				data.cellpadding = testPattern("TABLEs without CELLPADDING attribute", v, /<table/g, /cellpadding/g);
 				data.cellspacing = testPattern("TABLEs without CELLSPACING attribute", v, /<table/g, /cellspacing/g);
 				data.tableborder = testPattern("TABLEs without BORDER attribute", v, /<table/g, /border/g);
-				data.tableTooWide = testTableWidth("TABLEs too wide", v);
+				data.tableTooWide = testTableWidth("TABLEs too wide...", v);
 
 				data.percent = testPattern("You should avoid % values...", v, /width=".*?%"/g, null);
-				data.percentOutlook = testPattern("Outlook is funny about PX in attributes...", v, /(height|width)="[0-9]*px?"/g, null);
+				data.percentOutlook = testPattern(
+					"Outlook is funny about PX in attributes...",
+					v,
+					/(height|width)="[0-9]*px?"/g,
+					null
+				);
+
+				data.tdheight = testTDHeight("TDs with HEIGHT less than 16px...", v);
 
 				//chrome.extension.sendMessage(data);
 				buildPopup(data);
@@ -62,6 +69,53 @@ if ($("#mailer-checklist-wrapper").size() > 0) {
 
 	xmlhttp.send(null)
 }
+
+
+// Outlook 2013 fix.
+// Table cells with height <= 15 need additional style attributes: line-height & font-size
+// and can't be empty (&nbsp; is fine).
+function testTDHeight(desc, v) {
+	var result = [desc];
+	var line_number = 0;
+	cell_content = false;
+	for (line_number = 0; line_number < v.length; line_number++) {
+		var line_elements = v[line_number]
+			.replace(/</g, "\n<")
+			.replace(/>/g, ">\n")
+			.split("\n");
+		for (var j = 0; j < line_elements.length; j++) {
+			var a = line_elements[j];
+			if (cell_content) {
+				if (a.match(/<\/td>/)) {
+					if (! trim(cell_content).length) {
+						result.push([line_number + 1, a + " - cell can't be empty (try: #start#&amp;nbsp;#end#)"]);
+					}
+					cell_content = false;
+				} else {
+					cell_content += trim(a);
+				}
+			} else if (a.match(/<td/) != null) {
+				var td_height = parseInt(getAttr(a, "height"));
+				if (td_height <= 15) {
+					// check if it has correct styles applied
+					if (px2int($(a).css("line-height")) != td_height ||
+						px2int($(a).css("font-size")) != td_height) {
+						result.push([
+							line_number + 1,
+							a + ' - #start#style="font-size: ' + td_height +
+								'; line-height: ' + td_height + 'px"#end# required on TD'
+						]);
+					}
+					// check that the cell is not empty
+					cell_content = ' ';
+				}
+			}
+		}
+	}
+
+	return result;
+}
+
 
 // test if total width of TDs is larger that parent TABLE
 function testTdWidth(desc, v) {
@@ -74,7 +128,7 @@ function testTdWidth(desc, v) {
 			if (a.length > 0) {
 				if (a.match(/<table/) != null) {
 					t_width.push(["table", getWidth(a, false), line_number + 1, a]);
-				}	
+				}
 				if (a.match(/<tr/) != null) {
 					t_width.push(["tr", line_number + 1]);
 				}
@@ -110,13 +164,17 @@ function testTdWidth(desc, v) {
 						break;
 					} else {
 						if (el[1] < max_width) {
-							result.push([el[2], el[3] + " - total width of all TDs is: #start#" + max_width + "px #end# - (try line: #start#[" + tr_over + "]#end#)"]);
+							result.push([el[2], el[3] + " - total width of all TDs is: #start#" + max_width +
+								"px #end# - (try line: #start#[" + tr_over + "]#end#)"
+							]);
 						}
 						if (min_width > 0 && el[1] > min_width) {
-							result.push([el[2], el[3] + " - total width of all TDs is: #start#" + min_width + "px #end# - (try line: #start#[" + tr_under + "]#end#)"]);
+							result.push([el[2], el[3] + " - total width of all TDs is: #start#" + min_width +
+								"px #end# - (try line: #start#[" + tr_under + "]#end#)"
+							]);
 						}
 					}
-				}	
+				}
 			}
 		}
 	}
@@ -141,7 +199,7 @@ function testTableWidth(desc, v) {
 					if ((td_width.last() != -987) && (table_width.last() > td_width.last())) {
 						result.push([line_number+1, a + " - parent TD is only #start#" + td_width.last() + "px #end# wide"]);
 					}
-				}	
+				}
 				if (a.match(/<td/) != null) {
 					td_width.push(getWidth(a, true));
 				}
@@ -171,7 +229,7 @@ function testImageWidth(desc, v) {
 					if ((td_width.last() != -987) && (img_width.last() > td_width.last())) {
 						result.push([line_number+1, a + " - parent TD is only #start#" + td_width.last() + "px #end# wide"]);
 					}
-				}	
+				}
 				if (a.match(/<td/) != null) {
 					td_width.push(getWidth(a, true));
 				}
@@ -189,7 +247,7 @@ function getWidth(a, ignorePadding) {
 	var width_string = a.match(/width=".*?"/);
 	var padding_value = 0;
 
-	if (!ignorePadding) {
+	if (! ignorePadding) {
 
 		var padding_string = a.match(/style.*?".*padding.*?"/);
 
@@ -205,7 +263,9 @@ function getWidth(a, ignorePadding) {
 				}
 			}
 
-			padding_value = px2int($("#test-padding-dummy").css("padding-left")) + px2int($("#test-padding-dummy").css("padding-right"));
+			var padding_left = px2int($("#test-padding-dummy").css("padding-left"));
+			var padding_right = px2int($("#test-padding-dummy").css("padding-right"));
+			padding_value = padding_left + padding_right;
 			$("#test-padding-dummy").remove();
 
 		}
@@ -214,22 +274,22 @@ function getWidth(a, ignorePadding) {
 	// found width attribute
 	if (width_string != null) {
 		var width_value = width_string[0].replace("width=", "").replace(/"/g, "");
-		if (!isNaN(width_value)) {
+		if (! isNaN(width_value)) {
 			return parseInt(padding_value) + parseInt(width_value);
 		} else {
 			return width_value;
 		}
-	} 
-	
+	}
+
 	// haven't found width attribute
 	return -1;
-	
+
 }
 
 function testSyntax(desc, v) {
 	var result = [desc];
 	var tags = [];
-	
+
 	for (var line_number = 0; line_number < v.length; line_number++) {
 		var line_elements = v[line_number].replace(/</g, "\n<").split("\n");
 		for (var j = 0; j < line_elements.length; j++) {
@@ -268,7 +328,8 @@ function testPattern(desc, v, pattern, not_pattern) {
 		for (var j = 0; j < line_elements.length; j++) {
 
 			// ignore % value on the first table
-			if ((!pastFirstTable) && (line_elements[j].match(/<table/) != null) && (pattern.toString().match(/%/) != null)) {
+			if ((! pastFirstTable) &&
+				(line_elements[j].match(/<table/) != null) && (pattern.toString().match(/%/) != null)) {
 				pastFirstTable = true;
 				break;
 			}
@@ -290,20 +351,36 @@ function testPattern(desc, v, pattern, not_pattern) {
 function testImages(desc, v) {
 	var result = [desc];
 	var tags = [];
-	
+	var last_open_td = [];
+
 	for (var line_number = 0; line_number < v.length; line_number++) {
 		var line_elements = v[line_number].replace(/</g, "\n<").split("\n");
 		for (var j = 0; j < line_elements.length; j++) {
-			if (line_elements[j].match(/<img/) != null) {
-				// get source
+			if (line_elements[j].match(/<td/) != null) {
+				last_open_td = [line_number, line_elements[j]];
+			} else if (line_elements[j].match(/<img/) != null) {
 				if ((img_src = getAttr(line_elements[j], "src")) != null) {
+					// check if actual width/height match attributes on IMG tag
 					var temp_img = new Image();
 					temp_img.src = img_src;
 					img_width = getAttr(line_elements[j], "width");
 					img_height = getAttr(line_elements[j], "height");
-
 					if ((img_width != temp_img.width) || (img_height != temp_img.height)) {
-						result.push([line_number, line_elements[j] + " - should be: #start#" + temp_img.width + " x " + temp_img.height + "#end#"]);
+						result.push([line_number + 1, line_elements[j] + " - should be: #start#" +
+							temp_img.width + " x " + temp_img.height + "#end#"
+						]);
+					}
+
+					// Outlook 2013 fix
+					// check if under 20px in height
+					if (temp_img.height < 20) {
+						if (px2int($(last_open_td[1]).attr("height")) != temp_img.height ||
+							px2int($(last_open_td[1]).css("line-height")) != temp_img.height) {
+							result.push([last_open_td[0] + 1, last_open_td[1] +
+								' - small image (height < 20px) - #start#height="' + temp_img.height +
+								'"#end# and #start#style="line-height: ' + temp_img.height + 'px"#end# required on TD'
+							]);
+						}
 					}
 				}
 			}
@@ -324,7 +401,13 @@ function trim(stringToTrim) {
 }
 
 function px2int(str) {
-	return parseInt(str.replace("px", ""));
+	number = undefined;
+
+	if (str) {
+		number = parseInt(str.replace("px", ""));
+	}
+
+	return number;
 }
 
 function getAttr(str, attr) {
