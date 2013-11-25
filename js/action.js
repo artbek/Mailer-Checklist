@@ -74,7 +74,7 @@ if ($("#mailer-checklist-wrapper").size() > 0) {
 
 
 				// images are processed asynchronously
-				// we'll use the counter to make sure processing of all images is finished
+				// we'll use the counter to know when processing of images is finished
 				var total_count_of_images = testImages(v);
 
 				$("body").on("imageTested", function(event, result) {
@@ -451,7 +451,7 @@ function testImages(v) {
 
 						// Outlook 2013 fix
 						// check if under 20px in height & no fixes applied
-						if (that.height < 30) {
+						if (that.height < 20) {
 							var td_wrap = that.last_open_td[1];
 							var td_wrap_line_number = that.last_open_td[0];
 							if (px2int($(td_wrap).attr("height")) != that.height ||
