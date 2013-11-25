@@ -7,28 +7,8 @@ if ($("#mailer-checklist-wrapper").size() > 0) {
 	xmlhttp.open("GET", location.href + '?' + timestamp, true);
 	xmlhttp.onreadystatechange=function() {
 		switch (xmlhttp.readyState) {
-			case 0:
-				chrome.extension.sendMessage("!request not initialized!");
-				break;
-
-			case 1:
-				chrome.extension.sendMessage("server connection established");
-				break;
-
-			case 2:
-				chrome.extension.sendMessage("request received");
-				break;
-
-			case 3:
-				chrome.extension.sendMessage("processing request");
-				chrome.extension.sendMessage({
-					origin: "message",
-					msg: "Processing..."
-				});
-				break;
 
 			case 4:
-				chrome.extension.sendMessage("finished");
 				source = xmlhttp.responseText;
 				// quick remove HTML comments, replace empty width attributes
 				// to force error and split lines to array
@@ -114,7 +94,6 @@ if ($("#mailer-checklist-wrapper").size() > 0) {
 
 				// images are processed asynchronously so we can't just call 'buildPopup()'
 				$("body").on("imagesReady", function() {
-					//chrome.extension.sendMessage(data);
 					buildPopup(data);
 				});
 		}
