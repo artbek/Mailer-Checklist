@@ -57,7 +57,10 @@ if ($("#mailer-checklist-wrapper").size() > 0) {
 				data.imgBorder = testPattern(desc, v, /<img/g, /border/g);
 
 				desc = "IMGs width/height attributes";
-				data.imgAttr = testImages(desc, v);
+				data.imageActualDimensions = [desc];
+
+				desc = "IMGs with small height";
+				data.imageSmallHeight = [desc];
 
 				desc = "IMGs too wide";
 				data.imgTooWide = testImageWidth(desc, v);
@@ -89,8 +92,31 @@ if ($("#mailer-checklist-wrapper").size() > 0) {
 				desc = "TDs with HEIGHT less than 16px";
 				data.tdheight = testTDHeight(desc, v);
 
-				//chrome.extension.sendMessage(data);
-				buildPopup(data);
+
+				// images are processed asynchronously
+				// we'll use the counter to make sure processing of all images is finished
+				var total_count_of_images = testImages(v);
+
+				$("body").on("imageTested", function(event, result) {
+					if (result.imageActualDimensions) {
+						data.imageActualDimensions.push(result.imageActualDimensions);
+					}
+					if (result.imageSmallHeight) {
+						data.imageSmallHeight.push(result.imageSmallHeight);
+					}
+
+					total_count_of_images--;
+					if (total_count_of_images <= 0) {
+						$("body").trigger("imagesReady");
+					}
+				});
+
+
+				// images are processed asynchronously so we can't just call 'buildPopup()'
+				$("body").on("imagesReady", function() {
+					//chrome.extension.sendMessage(data);
+					buildPopup(data);
+				});
 		}
 	}
 
@@ -409,55 +435,80 @@ function testPattern(desc, v, pattern, not_pattern) {
 	return result;
 }
 
-function testImages(desc, v) {
-	var result = [desc];
+// count images and attach necessary 'onload' event handlers, processing
+// synchronously dosn't guarantee that '.width' & '.height' will be populated
+function testImages(v) {
 	var tags = [];
 	var last_open_td = [];
+	var total_count = 0;
 
 	for (var line_number = 0; line_number < v.length; line_number++) {
 		var line_elements = v[line_number].replace(/</g, "\n<").split("\n");
 		for (var j = 0; j < line_elements.length; j++) {
 			if (line_elements[j].match(/<td/) != null) {
 				last_open_td = [line_number, line_elements[j]];
+
 			} else if (line_elements[j].match(/<img/) != null) {
 				if ((img_src = getAttr(line_elements[j], "src")) != null) {
-					// check if actual width/height match attributes on IMG tag
+					total_count++;
+
 					var temp_img = new Image();
 					temp_img.src = img_src;
-					img_width = getAttr(line_elements[j], "width");
-					img_height = getAttr(line_elements[j], "height");
-					if ((img_width != temp_img.width) ||
-						(img_height != temp_img.height))
-					{
-						result.push([
-							line_number + 1,
-							line_elements[j] + " - should be: #start#" + temp_img.width +
-							" x " + temp_img.height + "#end#"
-						]);
-					}
+					temp_img.user_given_img_tag = line_elements[j];
+					temp_img.last_open_td = last_open_td;
+					temp_img.line_number = line_number;
 
-					// Outlook 2013 fix
-					// check if under 20px in height
-					if (temp_img.height < 20) {
-						if (px2int($(last_open_td[1]).attr("height")) != temp_img.height ||
-							px2int($(last_open_td[1]).css("line-height")) != temp_img.height) {
-							result.push([
-								last_open_td[0] + 1,
-								last_open_td[1] +
-								' - small image (height < 20px) - #start#height="' +
-								temp_img.height +
-								'"#end# and #start#style="line-height: ' +
-								temp_img.height + 'px"#end# required on TD'
-							]);
+					temp_img.onload = function(event) {
+						var that = this;
+						var result = {};
+
+						if ( actualDimensionsDifferent(that) ) {
+							result.imageActualDimensions = [
+								that.line_number + 1,
+								that.user_given_img_tag + " - should be: #start#" + that.width +
+								" x " + that.height + "#end#"
+							];
 						}
+
+						// Outlook 2013 fix
+						// check if under 20px in height & no fixes applied
+						if (that.height < 30) {
+							var td_wrap = that.last_open_td[1];
+							var td_wrap_line_number = that.last_open_td[0];
+							if (px2int($(td_wrap).attr("height")) != that.height ||
+								px2int($(td_wrap).css("line-height")) != that.height) {
+								result.imageSmallHeight = [
+									td_wrap_line_number + 1,
+									td_wrap + ' - small image (height < 20px) - #start#height="' +
+									that.height +
+									'"#end# and #start#style="line-height: ' +
+									that.height + 'px"#end# required on TD'
+								];
+							}
+						}
+
+						$("body").trigger("imageTested", result);
 					}
 				}
 			}
 
 		}
 	}
-	return result;
+	return total_count;
 }
+
+function actualDimensionsDifferent(img_element) {
+	var are_different = false;
+
+	var user_img_width = getAttr(img_element.user_given_img_tag, "width");
+	var user_img_height = getAttr(img_element.user_given_img_tag, "height");
+	if ((user_img_width != img_element.width) || (user_img_height != img_element.height)) {
+		are_different = true;
+	}
+
+	return are_different;
+}
+
 
 // UTILS
 
