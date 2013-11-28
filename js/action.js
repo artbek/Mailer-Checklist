@@ -93,9 +93,15 @@ if ($("#mailer-checklist-wrapper").size() > 0) {
 
 
 				// images are processed asynchronously so we can't just call 'buildPopup()'
-				$("body").on("imagesReady", function() {
+				// do it only if there are any images to process
+				if (total_count_of_images > 0) {
+					$("body").on("imagesReady", function() {
+						debugger;
+						buildPopup(data);
+					});
+				} else {
 					buildPopup(data);
-				});
+				}
 		}
 	}
 
