@@ -123,7 +123,9 @@ function testTDHeight(desc, v) {
 					if (! trim(cell_content).length) {
 						result.push([
 							line_number + 1,
-							a + " - cell can't be empty (try: #start#&amp;nbsp;#end#)"
+							a + " - cell can't be empty " +
+								" (try: #start#&amp;nbsp;#end# for bespoke or " +
+								" #start#&amp;#160;#end# for template)"
 						]);
 					}
 					cell_content = false;
