@@ -116,42 +116,71 @@ if ($("#mailer-checklist-wrapper").size() > 0) {
 function testTDHeight(desc, v) {
 	var result = [desc];
 	var line_number = 0;
-	cell_content = false;
+	var open_tds = [];
+	var open_tds_content = [];
+	var open_tds_keys = [];
+	var last_open_td_key = '';
+
 	for (line_number = 0; line_number < v.length; line_number++) {
 		var line_elements = v[line_number]
 			.replace(/</g, "\n<")
 			.replace(/>/g, ">\n")
 			.split("\n");
+
 		for (var j = 0; j < line_elements.length; j++) {
-			var a = line_elements[j];
-			if (cell_content) {
-				if (a.match(/<\/td>/)) {
-					if (! trim(cell_content).length) {
-						result.push([
-							line_number + 1,
-							a + " - cell can't be empty " +
-								" (try: #start#&amp;nbsp;#end# for bespoke or " +
-								" #start#&amp;#160;#end# for template)"
-						]);
+			var a = trim(line_elements[j]);
+			if (! a) continue;
+
+			if (a.match(/<td/)) {
+				last_open_td_key = [line_number, j].join("_");
+				open_tds_keys.push(last_open_td_key);
+				open_tds[last_open_td_key] = a;
+				open_tds_content[last_open_td_key] = "";
+
+			} else if (a.match(/<\/td>/)) {
+				open_tds_keys.pop(); // just remove, we have the value saved
+				var last_open_td_content = trim(open_tds_content[last_open_td_key]);
+				if (! last_open_td_content.match(/</)) {
+					// so it's a TD without any html tags
+					var open_td_line_number = parseInt(last_open_td_key.split("_")[0]) + 1;
+
+					// now check it's height
+					var last_open_td = open_tds[last_open_td_key];
+					var td_height = parseInt(getAttr(last_open_td, "height"));
+					if (td_height <= 15) {
+						// it's a small TD, so it shouldn't be empty
+						if (last_open_td_content.length == 0) {
+							result.push([
+								open_td_line_number,
+								last_open_td + " - cell can't be empty " +
+									" (try: #start#&amp;nbsp;#end# for bespoke or " +
+									" #start#&amp;#160;#end# for template)"
+							]);
+						}
+						// check if it has correct styles applied
+						if (px2int($(last_open_td).css("line-height")) != td_height ||
+							px2int($(last_open_td).css("font-size")) != td_height)
+						{
+							result.push([
+								open_td_line_number,
+								last_open_td + ' - #start#style="font-size: ' + td_height +
+									'; line-height: ' + td_height + 'px"#end# required on TD'
+							]);
+						}
 					}
-					cell_content = false;
-				} else {
-					cell_content += trim(a);
 				}
-			} else if (a.match(/<td/) != null) {
-				var td_height = parseInt(getAttr(a, "height"));
-				if (td_height <= 15) {
-					// check if it has correct styles applied
-					if (px2int($(a).css("line-height")) != td_height ||
-						px2int($(a).css("font-size")) != td_height) {
-						result.push([
-							line_number + 1,
-							a + ' - #start#style="font-size: ' + td_height +
-								'; line-height: ' + td_height + 'px"#end# required on TD'
-						]);
+				// current TD is close so get the next key (FILO)
+				// and append all content of the child TD (the one that just closed)
+				var last_open_td_key = open_tds_keys[open_tds_keys.length - 1];
+				open_tds_content[last_open_td_key] += last_open_td_content;
+
+			} else {
+				if (open_tds_keys.length > 0) {
+					if (open_tds_content[last_open_td_key]) {
+						open_tds_content[last_open_td_key] += a;
+					} else {
+						open_tds_content[last_open_td_key] = a;
 					}
-					// check that the cell is not empty
-					cell_content = ' ';
 				}
 			}
 		}
