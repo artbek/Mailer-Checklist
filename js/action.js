@@ -45,6 +45,9 @@ if ($("#mailer-checklist-wrapper").size() > 0) {
 				desc = "IMGs too wide";
 				data.imgTooWide = testImageWidth(desc, v);
 
+				desc = "IMGs without parent DIVs";
+				data.imgParentsWrong = testImageParents(desc, v);
+
 				desc = "You shouldn't use ROWSPANS/COLSPANS";
 				data.spans = testPattern(desc, v, /(rowspan|colspan)/g, null);
 
@@ -332,6 +335,54 @@ function testImageWidth(desc, v) {
 
 		}
 	}
+	return result;
+}
+
+
+// test if IMG is inside a dive with height (Outlook 2013, Office 365)
+function testImageParents(desc, v) {
+	var result = [desc];
+
+	var history = [];
+	var history_index = 0;
+	var div_regex = new RegExp("<div.*style.*height.*px");
+
+	for (var line_number = 0; line_number < v.length; line_number++) {
+		var line_elements = v[line_number].replace(/</g, "\n<").split("\n");
+
+		for (var j = 0; j < line_elements.length; j++) {
+			var a = line_elements[j].trim();
+			if (a.length > 0) {
+				history.push(a);
+
+				if (a.match(/<img/) != null) {
+					var prev = history[history_index - 1] || "";
+					var prevprev = history[history_index - 2] || "";
+
+					// test if previous is DIV or DIV + A(nchor); the DIV needs style with height
+					if ( prev.match(div_regex) || (prev.match(/<a/) && prevprev.match(div_regex)) ) {
+						if ( prev.match(/<div/) && prevprev.match(/<a/) ) {
+							result.push([
+								line_number + 1,
+								a + " - #start#BOTH#end# <a> &amp; <img> should be #start#inside#end# the parent <div>"
+							]);
+						}
+
+					} else {
+						result.push([
+							line_number + 1,
+							a + ' - missing parent: #start#<div style="height: ...px">#end#'
+						]);
+					}
+				}
+
+				history_index++;
+			}
+
+		}
+
+	}
+
 	return result;
 }
 
