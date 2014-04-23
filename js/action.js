@@ -96,7 +96,6 @@ if ($("#mailer-checklist-wrapper").size() > 0) {
 				// do it only if there are any images to process
 				if (total_count_of_images > 0) {
 					$("body").on("imagesReady", function() {
-						debugger;
 						buildPopup(data);
 					});
 				} else {
@@ -504,6 +503,10 @@ function testImages(v) {
 						}
 
 						$("body").trigger("imageTested", result);
+					}
+
+					temp_img.onerror = function(event) {
+						alert("Couldn't load image: [" + img_src + "]");
 					}
 				}
 			}
