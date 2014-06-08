@@ -75,6 +75,9 @@ if ($("#mailer-checklist-wrapper").size() > 0) {
 				desc = "TDs with HEIGHT less than 16px";
 				data.tdheight = testTDHeight(desc, v);
 
+				desc = "1st inner table looks better CENTER-ALIGNED";
+				data.tableCentered = testTableCentered(desc, v);
+
 
 				// images are processed asynchronously
 				// we'll use the counter to know when processing of images is finished
@@ -463,6 +466,42 @@ function testSyntax(desc, v) {
 
 		}
 	}
+	return result;
+}
+
+
+function testTableCentered(desc, v) {
+	var result = [desc];
+	var pastFirstTable = false;
+	var pastSecondTable = false;
+
+	for (var line_number = 0; line_number < v.length; line_number++) {
+		var line_elements = v[line_number].replace(/</g, "\n<").split("\n");
+
+		for (var j = 0; j < line_elements.length; j++) {
+			// ignore the first table
+			if (! pastFirstTable && line_elements[j].match(/<table/) != null) {
+				pastFirstTable = true;
+				break;
+			}
+
+			if (line_elements[j].match(/<table/)) {
+				var align_string = getAttr(line_elements[j], 'align');
+				if (! align_string || ! align_string.match(/center/)) {
+					result.push([
+						line_number + 1,
+						line_elements[j] + '" - looks better with #start# align="center" #end# (Outlook Web App)'
+					]);
+				}
+
+				pastSecondTable = true;
+				break;
+			}
+		}
+
+		if (pastSecondTable) break;
+	}
+
 	return result;
 }
 
